@@ -29,7 +29,7 @@ final class RedemptionsRepository extends AbstractRepository {
 	 * @param int   $user_id
 	 * @param float $discount
 	 * @param array $gifts_data
-	 * @return int|false  Inserted row ID or false.
+	 * @return int|false
 	 */
 	public function record(
 		int $rule_id,
@@ -42,7 +42,7 @@ final class RedemptionsRepository extends AbstractRepository {
 			'rule_id'    => $rule_id,
 			'order_id'   => $order_id,
 			'user_id'    => $user_id,
-			'session_id' => WC()->session ? WC()->session->get_customer_id() : '',
+			'session_id' => WC()->session ? (string) WC()->session->get_customer_id() : '',
 			'discount'   => $discount,
 			'gifts_data' => wp_json_encode( $gifts_data ),
 		] );
@@ -63,6 +63,29 @@ final class RedemptionsRepository extends AbstractRepository {
 				$user_id
 			)
 		);
+	}
+
+	/**
+	 * Returns all redemption rows for a given WooCommerce order ID.
+	 *
+	 * FIX: RevenueTracker::on_order_complete() calls $this->repo->get_for_order()
+	 * but this method was completely absent, causing a fatal error on every
+	 * completed order.
+	 *
+	 * @param int $order_id
+	 * @return array<int, array<string,mixed>>
+	 */
+	public function get_for_order( int $order_id ): array {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $this->db->get_results(
+			$this->db->prepare(
+				"SELECT * FROM `{$this->table}` WHERE `order_id` = %d",
+				$order_id
+			),
+			ARRAY_A
+		);
+
+		return is_array( $rows ) ? $rows : [];
 	}
 
 	/**
@@ -88,7 +111,7 @@ final class RedemptionsRepository extends AbstractRepository {
 		return [
 			'orders'   => (int) ( $row['orders'] ?? 0 ),
 			'discount' => (float) ( $row['discount'] ?? 0 ),
-			'revenue'  => 0.0, // populated separately by analytics engine
+			'revenue'  => 0.0,
 		];
 	}
 }

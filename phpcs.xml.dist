@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<ruleset name="Matrix BOGO">
+    <description>WordPress + WooCommerce coding standards for Matrix BOGO WooCommerce Promotion.</description>
+
+    <file>.</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/tests/*</exclude-pattern>
+    <exclude-pattern>*.min.js</exclude-pattern>
+    <exclude-pattern>*.min.css</exclude-pattern>
+
+    <config name="testVersion" value="8.1-"/>
+
+    <arg name="basepath" value="."/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <arg name="extensions" value="php"/>
+
+    <rule ref="WordPress-Core"/>
+    <rule ref="WordPress-Docs"/>
+    <rule ref="WordPress-Extra"/>
+    <rule ref="PHPCompatibilityWP"/>
+
+    <config name="minimum_supported_wp_version" value="6.0"/>
+
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="matrix_bogo"/>
+                <element value="MatrixBogo"/>
+                <element value="MATRIX_BOGO"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="matrix-bogo"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- Direct DB queries are acceptable in repository layer; all use prepare() -->
+    <rule ref="WordPress.DB.DirectDatabaseQuery">
+        <exclude-pattern>includes/Database/*</exclude-pattern>
+        <exclude-pattern>includes/Abstracts/AbstractRepository.php</exclude-pattern>
+    </rule>
+
+    <rule ref="WordPress.DB.PreparedSQL.InterpolatedNotPrepared">
+        <exclude-pattern>includes/Database/*</exclude-pattern>
+        <exclude-pattern>includes/Abstracts/AbstractRepository.php</exclude-pattern>
+        <exclude-pattern>includes/Abstracts/AbstractPromotion.php</exclude-pattern>
+    </rule>
+
+    <rule ref="WordPress.DB.DirectDatabaseQuery.SchemaChange">
+        <exclude-pattern>includes/Database/Schema.php</exclude-pattern>
+        <exclude-pattern>uninstall.php</exclude-pattern>
+    </rule>
+
+    <!-- Allow PHP 8.x short-array and match syntax -->
+    <rule ref="Generic.Arrays.DisallowShortArraySyntax">
+        <severity>0</severity>
+    </rule>
+
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit"         value="120"/>
+            <property name="absoluteLineLimit" value="200"/>
+        </properties>
+    </rule>
+
+    <rule ref="Squiz.Commenting.FileComment.Missing">
+        <severity>0</severity>
+    </rule>
+</ruleset>

@@ -2,9 +2,9 @@
 Contributors: matrixplugins
 Tags: woocommerce, bogo, buy one get one, free gift, promotion, discount, coupon
 Requires at least: 6.0
-Tested up to: 6.6
+Tested up to: 6.7
 Requires PHP: 8.1
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,7 +19,7 @@ Enterprise-grade BOGO and promotion engine for WooCommerce. Create Buy-X-Get-Y o
 * **5 Promotion Types** – Buy X Get Y, Buy X Get X (same product), Spend Amount Get Gift, Cart Quantity Get Gift, Category Get Gift
 * **Condition Engine** – 16 condition types including cart subtotal, cart quantity, customer roles, purchase history, date/time ranges and more
 * **Priority & Stacking** – Define which promotions stack, which are exclusive, and set granular priorities
-* **Auto-Apply & Gift Popup** – Automatically add free products to cart, or show an elegant gift-choice popup
+* **Auto-Apply & Gift Popup** – Automatically add free products to cart, or show an elegant gift-choice modal
 * **Scheduling** – Set start/end dates for every promotion (powered by Action Scheduler)
 * **Analytics Dashboard** – Daily redemption charts, revenue attribution, conversion rates
 * **REST API** – Full CRUD API at `matrix-bogo/v1`
@@ -69,6 +69,10 @@ Yes. Enable *Customer Choice* on a reward and provide a pool of eligible product
 
 Yes. Both trigger products and reward products support product variations.
 
+= Will the plugin break on existing installs when I update? =
+
+No. The installer's `maybe_upgrade()` routine runs on every load and applies schema changes automatically. No deactivation/reactivation is needed.
+
 == Screenshots ==
 
 1. Dashboard overview with stats and top promotions
@@ -79,61 +83,60 @@ Yes. Both trigger products and reward products support product variations.
 
 == Changelog ==
 
+= 1.0.8 =
+* Fixed: Cart promotion notices were always blank — `promotion_label` key was never populated in the session rewards map
+* Fixed: Active rules object-cache was a no-op — cache key changed every second (md5 of current timestamp); replaced with a static key busted on mutation
+* Fixed: Fatal error on every completed order — `RedemptionsRepository::get_for_order()` was called by RevenueTracker but the method did not exist
+* Fixed: `LogsRepository` and `Logger` allowed 'debug' level strings but the DB ENUM only listed 'info|warning|error'; existing installs now receive an automatic ALTER TABLE migration
+* Fixed: `AnalyticsEndpoint::get_analytics()` called `get_daily($from, $to)` — missing required `$rule_id` first argument caused a TypeError on every REST analytics request; replaced with correct `get_daily_totals($from, $to)`
+* Fixed: `RulesRepository::increment_uses()` attempted to bust the active-rules cache with a wildcard pattern that never matches; now busts the correct static key
+* Added: Complete gift-selector popup CSS — the modal was rendered but completely unstyled
+* Added: `/analytics/rule/{id}` REST endpoint for per-rule daily analytics breakdown
+* Added: `phpcs.xml.dist` for WordPress/WooCommerce coding standards enforcement
+* Updated: WC tested up to 9.6
+* Updated: DB version bumped to 1.0.2
+
+= 1.0.7 =
+* Improved: Promotions list dashboard now shows expandable detail rows per promotion
+* Added: Each row can be expanded to reveal Promotion Settings, Conditions summary, and Rewards summary
+
 = 1.0.6 =
 * Fixed: Promotions were evaluated but gifts/discounts never appeared in cart
-* Fixed: All 5 promotion types now correctly read flat rule_data keys saved by the builder (trigger_product_ids, trigger_quantity, min_amount, min_quantity, trigger_category_ids)
-* Fixed: Rewards from the matrix_bogo_rewards table are now loaded and injected into each promotion type at evaluation time
-* Fixed: cart_quantity_get_gift type key mismatch (was cart_qty_get_gift in registry)
-* Fixed: Fixed-discount and percentage-discount rewards now apply without requiring a product_id
-* Added: cheapest_free reward type now supported in cart
-* Added: Percentage discount applies to full cart when no product_id is set
+* Fixed: All 5 promotion types now correctly read flat rule_data keys saved by the builder
+* Fixed: Rewards from the matrix_bogo_rewards table are now loaded and injected at evaluation time
+* Fixed: cart_quantity_get_gift type key mismatch
+* Fixed: Fixed/percent-discount rewards now apply without requiring a product_id
+* Added: cheapest_free reward type now supported
+* Added: Percentage discount applies to full cart subtotal when no product_id is set
 
 = 1.0.5 =
-* Fixed: "Failed to save promotion" — description field was in the form but missing from the database schema, causing every INSERT to fail
-* Added: description column to matrix_bogo_rules table
-* Added: Automatic DB schema upgrade on plugins_loaded — no deactivate/reactivate needed
-* Bumped: DB version to 1.0.1
+* Fixed: "Failed to save promotion" — description column was missing from the database schema
+* Added: description column to matrix_bogo_rules table (DB version 1.0.1)
+* Added: Automatic DB schema upgrade on plugins_loaded
 
 = 1.0.4 =
-* Fixed: Missing function declaration for buildConditionRowHtml — accidentally dropped during 1.0.3 edit, causing a second fatal JS syntax error
-* Fixed: Add Condition Group, Add Reward, Trigger Products search all now fully functional
+* Fixed: Missing function declaration for buildConditionRowHtml
 
 = 1.0.3 =
-* Fixed: Critical JavaScript syntax error in buildConditionValueHtml — broken switch statement caused entire admin.js to fail silently
-* Fixed: Add Condition Group button now works
-* Fixed: Add Reward button now works
-* Fixed: Trigger Products / Categories Select2 search now functional
-* Changed: Minimum search length for all product/category fields raised to 3 characters
+* Fixed: Critical JavaScript syntax error in buildConditionValueHtml
+* Fixed: Add Condition Group button, Add Reward button, Trigger Products search
+* Changed: Minimum input length for product/category search raised to 3 characters
 
 = 1.0.2 =
-* Added: Live AJAX product search — find products by name, SKU, or ID in all product fields
-* Added: Live AJAX category search — find categories by name or ID in all category fields
-* Added: New AjaxSearch class powering searchable Select2 dropdowns across Promotion Settings, Conditions, and Rewards
-* Improved: Reward 'Free Product' field now uses searchable picker instead of manual ID input
-* Improved: Reward 'Choice Pool' field now uses multi-product searchable picker
-* Improved: Condition 'Cart Contains Products / Purchased Product' fields now use searchable picker
-* Improved: Condition 'Cart Contains Categories' field now uses searchable category picker
-* Fixed: Select2 (WooCommerce enhanced select) pre-populated correctly on edit page load
+* Added: Live AJAX product/category search powering Select2 dropdowns
 
 = 1.0.1 =
-* Fixed: Promotion Settings fields now rendered server-side — no longer shows "Loading…" regardless of JS state
-* Fixed: CSS not loading on plugin pages (removed wp-components dependency)
-* Fixed: Condition and Reward builder data passed as inline JS object instead of HTML attribute JSON
-* Fixed: Analytics chart moved inside DOM-ready block
+* Fixed: Promotion Settings fields rendered server-side
+* Fixed: CSS not loading on plugin pages
+* Fixed: Condition and Reward builder data passed as inline JS
 
 = 1.0.0 =
 * Initial release
 
 == Upgrade Notice ==
 
+= 1.0.8 =
+Critical bug-fix release. Resolves cart notice blanks, completed-order fatals, analytics REST errors, and a completely missing popup stylesheet. Update immediately.
+
 = 1.0.3 =
 Fixes critical JS crash that broke all builder buttons and search fields. Update immediately.
-
-= 1.0.2 =
-Adds live product/category search to all builder fields. No more typing IDs manually.
-
-= 1.0.1 =
-Fixes Promotion Settings not rendering and CSS not loading. Update recommended.
-
-= 1.0.0 =
-Initial release of Matrix BOGO WooCommerce Promotion.

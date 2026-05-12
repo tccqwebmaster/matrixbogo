@@ -18,13 +18,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class Logger
  *
- * Usage: Logger::info('event', 'message');
+ * FIX: 'debug' is now a valid ENUM value in the logs table (Schema.php updated).
+ * The level is validated here before reaching the DB; invalid values fall back
+ * to 'info' so no row is ever corrupted.
  */
 final class Logger {
 
-	// -----------------------------------------------------------------
-	// Static shortcuts
-	// -----------------------------------------------------------------
+	/** Must match the `level` ENUM in the DB schema exactly. */
+	private const ALLOWED_LEVELS = [ 'info', 'warning', 'error', 'debug' ];
 
 	public static function info( string $event, string $message, array $context = [], ?int $rule_id = null, ?int $order_id = null ): void {
 		self::log( $event, $message, $context, $rule_id, $order_id, 'info' );
@@ -34,20 +35,17 @@ final class Logger {
 		self::log( $event, $message, $context, $rule_id, $order_id, 'warning' );
 	}
 
+	/** Errors are always persisted regardless of the enable_logging toggle. */
 	public static function error( string $event, string $message, array $context = [], ?int $rule_id = null, ?int $order_id = null ): void {
-		self::log( $event, $message, $context, $rule_id, $order_id, 'error' );
+		self::log( $event, $message, $context, $rule_id, $order_id, 'error', true );
 	}
 
 	public static function debug( string $event, string $message, array $context = [], ?int $rule_id = null, ?int $order_id = null ): void {
 		$settings = get_option( 'matrix_bogo_settings', [] );
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG || ! empty( $settings['enable_logging'] ) ) {
+		if ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || ! empty( $settings['enable_logging'] ) ) {
 			self::log( $event, $message, $context, $rule_id, $order_id, 'debug' );
 		}
 	}
-
-	// -----------------------------------------------------------------
-	// Core
-	// -----------------------------------------------------------------
 
 	private static function log(
 		string $event,
@@ -55,13 +53,27 @@ final class Logger {
 		array $context,
 		?int $rule_id,
 		?int $order_id,
-		string $level
+		string $level,
+		bool $force = false
 	): void {
-		$settings = get_option( 'matrix_bogo_settings', [] );
-		if ( empty( $settings['enable_logging'] ) && 'error' !== $level ) {
-			return;
+		if ( ! in_array( $level, self::ALLOWED_LEVELS, true ) ) {
+			$level = 'info';
 		}
 
-		( new LogsRepository() )->log( $event, $message, $context, $rule_id, $order_id, $level );
+		if ( ! $force ) {
+			$settings = get_option( 'matrix_bogo_settings', [] );
+			if ( empty( $settings['enable_logging'] ) ) {
+				return;
+			}
+		}
+
+		( new LogsRepository() )->log(
+			$event,
+			$message,
+			$context,
+			(int) $rule_id,
+			(int) $order_id,
+			$level
+		);
 	}
 }

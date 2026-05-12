@@ -2,8 +2,6 @@
 /**
  * Promotion Engine – the core evaluation hub.
  *
- * Loads active rules, runs condition checks, and returns applicable promotions.
- *
  * @package MatrixBogo\Promotions
  */
 
@@ -14,7 +12,9 @@ namespace MatrixBogo\Promotions;
 use MatrixBogo\Abstracts\AbstractPromotion;
 use MatrixBogo\Conditions\ConditionEngine;
 use MatrixBogo\Core\Loader;
-use MatrixBogo\Database\Repositories\RulesRepository;use MatrixBogo\Database\Repositories\RewardsRepository;use MatrixBogo\Database\Repositories\RedemptionsRepository;
+use MatrixBogo\Database\Repositories\RulesRepository;
+use MatrixBogo\Database\Repositories\RewardsRepository;
+use MatrixBogo\Database\Repositories\RedemptionsRepository;
 use MatrixBogo\Helpers\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -23,13 +23,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Class PromotionEngine
- *
- * Central coordinator:
- * 1. Fetches active rules from DB.
- * 2. Runs each rule's conditions via ConditionEngine.
- * 3. Instantiates the correct promotion type class.
- * 4. Applies priority / exclusivity rules.
- * 5. Returns a list of applicable reward descriptors.
  */
 final class PromotionEngine {
 
@@ -51,11 +44,7 @@ final class PromotionEngine {
 	/** @var PriorityManager */
 	private PriorityManager $priority_manager;
 
-	/**
-	 * Registry of promotion type handlers.
-	 *
-	 * @var array<string, string>  [type => class]
-	 */
+	/** @var array<string, string> [type => class] */
 	private array $type_registry = [];
 
 	public function __construct() {
@@ -74,7 +63,6 @@ final class PromotionEngine {
 	// -----------------------------------------------------------------
 
 	public function init( Loader $loader ): void {
-		// Trigger re-evaluation on cart updates.
 		$loader->add_action( 'woocommerce_cart_loaded_from_session', [ $this, 'evaluate_cart' ], 15 );
 		$loader->add_action( 'woocommerce_after_calculate_totals',   [ $this, 'evaluate_cart' ], 15 );
 	}
@@ -84,20 +72,17 @@ final class PromotionEngine {
 	// -----------------------------------------------------------------
 
 	private function register_default_types(): void {
-		$this->register_type( 'buy_x_get_y',             Types\BuyXGetY::class );
-		$this->register_type( 'buy_x_get_x',             Types\BuyXGetX::class );
-		$this->register_type( 'spend_amount_get_gift',   Types\SpendAmountGetGift::class );
-		$this->register_type( 'cart_quantity_get_gift',  Types\CartQuantityGetGift::class );
-		$this->register_type( 'category_get_gift',       Types\CategoryGetGift::class );
+		$this->register_type( 'buy_x_get_y',            Types\BuyXGetY::class );
+		$this->register_type( 'buy_x_get_x',            Types\BuyXGetX::class );
+		$this->register_type( 'spend_amount_get_gift',  Types\SpendAmountGetGift::class );
+		$this->register_type( 'cart_quantity_get_gift', Types\CartQuantityGetGift::class );
+		$this->register_type( 'category_get_gift',      Types\CategoryGetGift::class );
 
 		do_action( 'matrix_bogo_register_promotion_types', $this );
 	}
 
 	/**
 	 * Registers a custom promotion type.
-	 *
-	 * @param string $type       Machine-readable type key.
-	 * @param string $class_name Class extending AbstractPromotion.
 	 */
 	public function register_type( string $type, string $class_name ): void {
 		$this->type_registry[ $type ] = $class_name;
@@ -109,27 +94,33 @@ final class PromotionEngine {
 
 	/**
 	 * Evaluates all active promotions against the current WC cart.
-	 * Called automatically on cart recalculation.
+	 *
+	 * FIX: The previous implementation stored rewards in the session without
+	 * a 'promotion_label' key, but CartPage, CartNotices and CheckoutPage all
+	 * read $entry['promotion_label']. That meant every cart notice was blank.
+	 * We now populate 'promotion_label' from the rule name.
 	 *
 	 * @param \WC_Cart|null $cart
-	 * @return array<int, array<string,mixed>>  Array of applicable reward sets.
+	 * @return array<int, array<string,mixed>>
 	 */
 	public function evaluate_cart( ?\WC_Cart $cart = null ): array {
 		if ( null === $cart ) {
 			$cart = WC()->cart;
 		}
 		if ( ! $cart || $cart->is_empty() ) {
+			$this->clear_session_rewards();
 			return [];
 		}
 
 		$rules = $this->rules_repo->get_active_rules();
 		if ( empty( $rules ) ) {
+			$this->clear_session_rewards();
 			return [];
 		}
 
-		$user_id   = get_current_user_id();
-		$context   = [ 'cart' => $cart, 'user_id' => $user_id ];
-		$matched   = [];
+		$user_id = get_current_user_id();
+		$context = [ 'cart' => $cart, 'user_id' => $user_id ];
+		$matched = [];
 
 		foreach ( $rules as $rule ) {
 			$promotion = $this->make_promotion( $rule );
@@ -137,11 +128,9 @@ final class PromotionEngine {
 				continue;
 			}
 
-			// Load and inject the DB rewards rows for this rule.
 			$db_rewards = $this->rewards_repo->get_for_rule( (int) $rule['id'] );
 			$promotion->set_db_rewards( $db_rewards );
 
-			// Usage limit checks.
 			if ( $promotion->is_usage_limit_reached() ) {
 				continue;
 			}
@@ -149,12 +138,10 @@ final class PromotionEngine {
 				continue;
 			}
 
-			// Condition checks.
 			if ( ! $this->condition_engine->evaluate( $promotion->get_id(), $context ) ) {
 				continue;
 			}
 
-			// Promotion-type applicability check.
 			if ( ! $promotion->is_applicable( $cart ) ) {
 				continue;
 			}
@@ -162,17 +149,20 @@ final class PromotionEngine {
 			$matched[] = $promotion;
 		}
 
-		// Apply priority / exclusive / stackable logic.
 		$matched = $this->priority_manager->resolve( $matched );
 
-		// Calculate rewards.
 		$rewards = [];
 		foreach ( $matched as $promotion ) {
 			$rule_rewards = $promotion->calculate_rewards( $cart );
 			if ( ! empty( $rule_rewards ) ) {
+				/*
+				 * FIX: Populate 'promotion_label' so every part of the UI that
+				 * reads $entry['promotion_label'] receives a non-empty string.
+				 */
 				$rewards[ $promotion->get_id() ] = [
-					'rule'    => $promotion->get_rule(),
-					'rewards' => $rule_rewards,
+					'rule'            => $promotion->get_rule(),
+					'rewards'         => $rule_rewards,
+					'promotion_label' => $promotion->get_name(),
 				];
 			}
 		}
@@ -180,12 +170,11 @@ final class PromotionEngine {
 		/**
 		 * Filters the final resolved reward sets.
 		 *
-		 * @param array    $rewards   Resolved reward descriptors.
-		 * @param \WC_Cart $cart      Current cart.
+		 * @param array<int, array<string,mixed>> $rewards
+		 * @param \WC_Cart                        $cart
 		 */
 		$rewards = apply_filters( 'matrix_bogo_resolved_rewards', $rewards, $cart );
 
-		// Store in WC session for cart page display.
 		if ( WC()->session ) {
 			WC()->session->set( 'matrix_bogo_rewards', $rewards );
 		}
@@ -203,6 +192,15 @@ final class PromotionEngine {
 			return [];
 		}
 		return (array) ( WC()->session->get( 'matrix_bogo_rewards' ) ?? [] );
+	}
+
+	/**
+	 * Clears the session reward map (e.g. when the cart empties).
+	 */
+	public function clear_session_rewards(): void {
+		if ( WC()->session ) {
+			WC()->session->set( 'matrix_bogo_rewards', [] );
+		}
 	}
 
 	// -----------------------------------------------------------------

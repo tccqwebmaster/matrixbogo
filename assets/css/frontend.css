@@ -1,5 +1,6 @@
 /* =========================================================
-   Matrix BOGO – Frontend Styles
+   Matrix BOGO – Frontend Styles (complete)
+   Includes all original styles + gift popup modal (was missing)
    ========================================================= */
 
 /* ── Product Badge ──────────────────────────────────────── */
@@ -20,9 +21,7 @@
 }
 
 /* ── Product Promotion Panel ────────────────────────────── */
-.matrix-bogo-product-promotions {
-	margin: 16px 0;
-}
+.matrix-bogo-product-promotions { margin: 16px 0; }
 
 .matrix-bogo-product-promo-badge {
 	display: flex;
@@ -35,14 +34,12 @@
 	margin-bottom: 8px;
 }
 
-.matrix-bogo-promo-icon { font-size: 1.2rem; line-height: 1; }
-.matrix-bogo-promo-name { font-weight: 600; }
-.matrix-bogo-promo-desc { color: #555; font-size: .875rem; margin-left: auto; }
+.matrix-bogo-promo-icon  { font-size: 1.2rem; line-height: 1; }
+.matrix-bogo-promo-name  { font-weight: 600; }
+.matrix-bogo-promo-desc  { color: #555; font-size: .875rem; margin-left: auto; }
 
 /* ── Cart Promotion Summary ─────────────────────────────── */
-.matrix-bogo-promotion-summary {
-	margin: 0 0 20px;
-}
+.matrix-bogo-promotion-summary { margin: 0 0 20px; }
 
 .matrix-bogo-promo-notice {
 	display: flex;
@@ -56,7 +53,32 @@
 	color: #155724;
 }
 
-/* ── Gift Section (Cart) ────────────────────────────────── */
+/* ── Cart Notices ───────────────────────────────────────── */
+.matrix-bogo-cart-promotions { margin: 0 0 16px; }
+
+.matrix-bogo-promo-notice.matrix-bogo-active {
+	background: #d4edda;
+	border: 1px solid #c3e6cb;
+	color: #155724;
+	padding: 10px 14px;
+	border-radius: 4px;
+	margin-bottom: 6px;
+	font-size: .9rem;
+}
+
+/* ── Free label in cart line item ───────────────────────── */
+.matrix-bogo-free-label {
+	display: inline-block;
+	background: #28a745;
+	color: #fff;
+	font-size: .72rem;
+	font-weight: 700;
+	padding: 2px 8px;
+	border-radius: 10px;
+	letter-spacing: .04em;
+}
+
+/* ── Cart Gift Section (inline, non-popup) ──────────────── */
 .matrix-bogo-gift-section {
 	margin: 24px 0;
 	padding: 20px;
@@ -99,6 +121,7 @@
 	position: absolute;
 	opacity: 0;
 	width: 0;
+	height: 0;
 }
 
 .matrix-bogo-gift-item label:has(input:checked) {
@@ -106,7 +129,7 @@
 	background: #eef5fb;
 }
 
-.matrix-bogo-gift-name { font-size: .85rem; font-weight: 600; }
+.matrix-bogo-gift-name       { font-size: .85rem; font-weight: 600; }
 
 .matrix-bogo-gift-free-label {
 	display: inline-block;
@@ -120,7 +143,7 @@
 
 .matrix-bogo-add-gift-btn { margin-top: 12px; }
 
-/* ── Checkout Promotions ────────────────────────────────── */
+/* ── Checkout Applied Promotions ────────────────────────── */
 .matrix-bogo-checkout-promotions {
 	padding: 12px 16px;
 	background: #d4edda;
@@ -131,3 +154,324 @@
 
 .matrix-bogo-checkout-promotions h3 { margin: 0 0 6px; font-size: .9rem; }
 .matrix-bogo-checkout-promotions ul { margin: 0; padding-left: 18px; }
+
+/* ==========================================================
+   GIFT SELECTOR POPUP / MODAL
+   FIX: This section was completely absent from the original
+   frontend.css. GiftPopup::render_popup_container() was
+   outputting the #matrix-bogo-gift-popup template in the
+   footer but it had zero styles, rendering it invisible.
+   ========================================================== */
+
+/* Backdrop */
+.matrix-bogo-popup {
+	position: fixed;
+	inset: 0;
+	z-index: 999999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+}
+
+.matrix-bogo-popup-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, .55);
+	backdrop-filter: blur(2px);
+	-webkit-backdrop-filter: blur(2px);
+}
+
+/* Modal card */
+.matrix-bogo-popup-content {
+	position: relative;
+	z-index: 1;
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, .22), 0 4px 16px rgba(0, 0, 0, .08);
+	width: 100%;
+	max-width: 640px;
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	animation: mbPopupIn .22s cubic-bezier(.4, 0, .2, 1) both;
+}
+
+@keyframes mbPopupIn {
+	from { opacity: 0; transform: scale(.94) translateY(12px); }
+	to   { opacity: 1; transform: scale(1)  translateY(0); }
+}
+
+/* Close button */
+.matrix-bogo-popup-close {
+	position: absolute;
+	top: 14px;
+	right: 16px;
+	background: none;
+	border: none;
+	font-size: 1.4rem;
+	line-height: 1;
+	color: #999;
+	cursor: pointer;
+	padding: 4px 6px;
+	border-radius: 4px;
+	transition: color .15s, background .15s;
+	z-index: 2;
+}
+
+.matrix-bogo-popup-close:hover {
+	color: #333;
+	background: #f0f0f0;
+}
+
+/* Modal header */
+.matrix-bogo-popup-content > h2 {
+	margin: 0;
+	padding: 22px 52px 6px 24px;
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: #1a1a1a;
+	border: none;
+}
+
+.matrix-bogo-popup-subtitle {
+	margin: 0 24px 16px;
+	font-size: .88rem;
+	color: #666;
+	line-height: 1.5;
+}
+
+/* Product grid (scrollable) */
+.matrix-bogo-popup-products {
+	flex: 1;
+	overflow-y: auto;
+	padding: 0 16px 16px 24px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+	gap: 10px;
+	align-content: start;
+}
+
+/* Loading spinner wrapper */
+.matrix-bogo-popup-loading {
+	grid-column: 1 / -1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	padding: 40px 0;
+	color: #888;
+	font-size: .9rem;
+}
+
+/* Product card inside popup */
+.matrix-bogo-popup-products .matrix-bogo-gift-item {
+	position: relative;
+}
+
+.matrix-bogo-popup-products .matrix-bogo-gift-item label {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 8px;
+	border: 1.5px solid #e2e2e2;
+	border-radius: 8px;
+	background: #fafafa;
+	cursor: pointer;
+	width: 100%;
+	text-align: center;
+	transition: border-color .18s, background .18s, box-shadow .18s;
+}
+
+.matrix-bogo-popup-products .matrix-bogo-gift-item label:hover {
+	border-color: #9bc4f0;
+	background: #f0f7ff;
+}
+
+.matrix-bogo-popup-products .matrix-bogo-gift-item label:has(input:checked) {
+	border-color: #2271b1;
+	background: #eef5fb;
+	box-shadow: 0 0 0 3px rgba(34, 113, 177, .18);
+}
+
+.matrix-bogo-popup-products .matrix-bogo-gift-item input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+/* Tick badge when selected */
+.matrix-bogo-popup-products .matrix-bogo-gift-item label:has(input:checked)::after {
+	content: '\2713';
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	width: 20px;
+	height: 20px;
+	line-height: 20px;
+	background: #2271b1;
+	color: #fff;
+	font-size: .7rem;
+	font-weight: 700;
+	border-radius: 50%;
+	text-align: center;
+}
+
+.matrix-bogo-popup-products img {
+	width: 80px;
+	height: 80px;
+	object-fit: cover;
+	border-radius: 6px;
+	background: #eee;
+}
+
+.matrix-bogo-popup-products .matrix-bogo-gift-name {
+	font-size: .78rem;
+	font-weight: 600;
+	color: #222;
+	line-height: 1.3;
+	/* 2-line clamp */
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.matrix-bogo-popup-products .matrix-bogo-gift-free-label {
+	background: #e63946;
+	color: #fff;
+	font-size: .64rem;
+	font-weight: 700;
+	padding: 2px 7px;
+	border-radius: 10px;
+	display: inline-block;
+}
+
+/* Actions bar */
+.matrix-bogo-popup-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 24px;
+	border-top: 1px solid #eee;
+	background: #fafafa;
+	flex-shrink: 0;
+}
+
+#matrix-bogo-popup-add-btn {
+	background: #2271b1;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 9px 22px;
+	font-size: .9rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background .18s, opacity .18s;
+}
+
+#matrix-bogo-popup-add-btn:hover:not(:disabled) {
+	background: #135e96;
+}
+
+#matrix-bogo-popup-add-btn:disabled {
+	opacity: .45;
+	cursor: not-allowed;
+}
+
+.matrix-bogo-popup-skip {
+	background: none;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	padding: 9px 16px;
+	font-size: .9rem;
+	color: #666;
+	cursor: pointer;
+	transition: border-color .18s, color .18s;
+}
+
+.matrix-bogo-popup-skip:hover {
+	border-color: #999;
+	color: #222;
+}
+
+/* Lock body scroll while popup open */
+body.matrix-bogo-popup-open {
+	overflow: hidden;
+	touch-action: none; /* iOS */
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 600px) {
+	/* Sheet-style slide-up on mobile */
+	.matrix-bogo-popup {
+		align-items: flex-end;
+		padding: 0;
+	}
+
+	.matrix-bogo-popup-content {
+		max-height: 90vh;
+		border-radius: 16px 16px 0 0;
+		animation: mbPopupSlideUp .28s cubic-bezier(.4, 0, .2, 1) both;
+	}
+
+	@keyframes mbPopupSlideUp {
+		from { opacity: 0; transform: translateY(100%); }
+		to   { opacity: 1; transform: translateY(0); }
+	}
+
+	.matrix-bogo-popup-products {
+		grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+	}
+
+	.matrix-bogo-popup-actions {
+		flex-direction: column;
+	}
+
+	#matrix-bogo-popup-add-btn,
+	.matrix-bogo-popup-skip {
+		width: 100%;
+		text-align: center;
+	}
+
+	.matrix-bogo-gift-products {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+/* ── RTL ────────────────────────────────────────────────── */
+.rtl .matrix-bogo-badge {
+	left: auto;
+	right: 10px;
+}
+
+.rtl .matrix-bogo-product-promo-badge {
+	border-left: none;
+	border-right: 4px solid #f59e0b;
+}
+
+.rtl .matrix-bogo-popup-close {
+	right: auto;
+	left: 16px;
+}
+
+.rtl .matrix-bogo-popup-products .matrix-bogo-gift-item label:has(input:checked)::after {
+	right: auto;
+	left: 6px;
+}
+
+.rtl .matrix-bogo-checkout-promotions ul,
+.rtl .matrix-bogo-popup-actions {
+	flex-direction: row-reverse;
+}
+
+/* ── Accessibility: reduced motion ─────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+	.matrix-bogo-popup-content {
+		animation: none;
+	}
+}
