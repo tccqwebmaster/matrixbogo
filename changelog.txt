@@ -1,5 +1,12 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-05-12 - version 1.0.8
+* Fixed: Fatal TypeError on every page load — removed strict WC_Product type hint from gift_is_purchasable() (WooCommerce passes string in some contexts)
+* Fixed: White screen on activation caused by malformed wp_enqueue_script() calls in Assets.php
+* Fixed: Action Scheduler notices — deferred as_next_scheduled_action/as_schedule_recurring_action until after data store is initialized
+* Fixed: ProgressBar::init() now checks progress_bar_enabled setting before running
+* Fixed: Added show_notices to Installer default settings
+
 2026-05-12 - version 1.0.7
 * Improved: Promotions list dashboard now shows expandable detail rows per promotion
 * Added: Each row can be expanded to reveal Promotion Settings (trigger products/categories, thresholds)
