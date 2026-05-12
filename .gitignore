@@ -1,0 +1,29 @@
+# WordPress
+wp-config.php
+wp-content/uploads/
+
+# Composer
+vendor/
+composer.lock
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build
+*.zip
+*.tar.gz
+
+# Logs
+*.log

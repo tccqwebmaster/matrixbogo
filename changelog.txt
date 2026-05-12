@@ -1,0 +1,65 @@
+*** Matrix BOGO WooCommerce Promotion Changelog ***
+
+2026-05-12 - version 1.0.7
+* Improved: Promotions list dashboard now shows expandable detail rows per promotion
+* Added: Each row can be expanded to reveal Promotion Settings (trigger products/categories, thresholds)
+* Added: Conditions summary — all condition groups (AND within group, OR between groups) displayed inline
+* Added: Rewards summary — reward type, product name, quantity, discount value shown per reward
+* Added: Human-readable type labels in the list ("Buy X Get Y", "Category Get Gift", etc.)
+* Added: Description excerpt shown below promotion name in the list
+
+2026-05-11 - version 1.0.6
+* Fixed: Promotions were evaluated but gifts/discounts never appeared in cart
+* Fixed: All 5 promotion types now correctly read flat rule_data keys saved by the builder
+* Fixed: Rewards from the matrix_bogo_rewards table are now loaded and injected into each promotion type at evaluation time
+* Fixed: cart_quantity_get_gift type key mismatch (was cart_qty_get_gift in registry)
+* Fixed: Fixed/percent-discount rewards now apply without requiring a product_id
+* Added: cheapest_free reward type now supported
+* Added: Percentage discount applies to full cart subtotal when no product_id is set
+
+2026-05-11 - version 1.0.5
+* Fixed: "Failed to save promotion" — description column was missing from the database schema
+* Added: description column to matrix_bogo_rules table (DB version 1.0.1)
+* Added: Automatic DB schema upgrade on plugins_loaded — no deactivate/reactivate needed
+
+2026-05-11 - version 1.0.4
+* Fixed: Missing function declaration for buildConditionRowHtml — accidentally dropped in 1.0.3, causing a second fatal JS syntax error
+* Fixed: Add Condition Group, Add Reward, and Trigger Products search fully restored
+
+2026-05-11 - version 1.0.3
+* Fixed: Critical JavaScript syntax error in buildConditionValueHtml — broken switch statement caused entire admin.js to fail silently
+* Fixed: Add Condition Group button
+* Fixed: Add Reward button
+* Fixed: Trigger Products / Categories Select2 search
+* Changed: Minimum input length for all product/category search fields raised to 3 characters
+
+2026-05-11 - version 1.0.2
+* Added: Live AJAX product search — find products by name, SKU, or ID in all product fields
+* Added: Live AJAX category search — find categories by name or ID in all category fields
+* Added: AjaxSearch class powering searchable Select2 dropdowns across Promotion Settings, Conditions, and Rewards
+* Improved: Reward Free Product field uses searchable picker instead of manual ID input
+* Improved: Reward Choice Pool field uses multi-product searchable picker
+* Improved: Condition Cart Contains Products / Purchased Product fields use searchable picker
+* Improved: Condition Cart Contains Categories field uses searchable category picker
+* Fixed: Select2 pre-populated correctly on edit page load
+
+2026-05-11 - version 1.0.1
+* Fixed: Promotion Settings fields rendered server-side — no longer shows "Loading..." regardless of JS state
+* Fixed: CSS not loading on plugin pages
+* Fixed: Condition and Reward builder data passed as inline JS object instead of HTML attribute JSON
+* Fixed: Analytics chart moved inside DOM-ready block
+
+2025-05-11 - version 1.0.0
+* Initial release
+* 5 promotion types: Buy X Get Y, Buy X Get X, Spend Amount Get Gift, Cart Quantity Get Gift, Category Get Gift
+* 16 condition types across customer, cart, order history, and time groups
+* Priority manager with stackable and exclusive promotion support
+* Auto-apply gifts and customer-choice gift popup
+* Action Scheduler integration for scheduled promotion activation/expiration
+* Analytics dashboard with daily redemption chart and revenue attribution
+* Full REST API at matrix-bogo/v1 (CRUD for promotions, analytics, logs)
+* Import/export promotions as JSON
+* HPOS (High-Performance Order Storage) compatibility declared
+* Multilingual-ready with complete POT file
+* Log viewer with level filtering and retention management
+* Setup wizard for first-run onboarding
