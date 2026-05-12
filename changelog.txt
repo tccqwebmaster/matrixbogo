@@ -1,5 +1,13 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-05-12 - version 1.0.9
+* Fixed: wpdb::prepare() called without a placeholder in RulesRepository::get_active_rules() — caused non-fatal notice on every page load
+* Fixed: Unescaped output in PromotionsList.php — trigger product names and category names now wrapped in esc_html() at echo point
+* Fixed: Unsanitized $_POST['prune_days'] and $_GET['paged'] in Logs.php — replaced with absint( wp_unslash() )
+* Fixed: Potential file inclusion vulnerability in Autoloader.php — added path-traversal guard rejecting class names containing '..'
+* Updated: WC tested up to 10.0 (was 9.6)
+* Updated: Tested up to WordPress 6.9 (was 6.7)
+
 2026-05-12 - version 1.0.8
 * Fixed: Fatal TypeError on every page load — removed strict WC_Product type hint from gift_is_purchasable() (WooCommerce passes string in some contexts)
 * Fixed: White screen on activation caused by malformed wp_enqueue_script() calls in Assets.php

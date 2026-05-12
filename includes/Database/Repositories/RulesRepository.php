@@ -54,12 +54,13 @@ final class RulesRepository extends AbstractRepository {
 			return $this->filter_by_schedule( (array) $cached, $now );
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = $this->db->get_results(
 			$this->db->prepare(
 				"SELECT * FROM `{$this->table}`
-				 WHERE `status` = 'active'
+				 WHERE `status` = %s
 				 ORDER BY `priority` ASC, `id` ASC",
+				'active'
 			),
 			ARRAY_A
 		);

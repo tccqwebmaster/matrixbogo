@@ -2,9 +2,9 @@
 Contributors: matrixplugins
 Tags: woocommerce, bogo, buy one get one, free gift, promotion, discount, coupon
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,7 +93,7 @@ No. The installer's `maybe_upgrade()` routine runs on every load and applies sch
 * Added: Complete gift-selector popup CSS — the modal was rendered but completely unstyled
 * Added: `/analytics/rule/{id}` REST endpoint for per-rule daily analytics breakdown
 * Added: `phpcs.xml.dist` for WordPress/WooCommerce coding standards enforcement
-* Updated: WC tested up to 9.6
+* Updated: WC tested up to 10.0
 * Updated: DB version bumped to 1.0.2
 
 = 1.0.7 =

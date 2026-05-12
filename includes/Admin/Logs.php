@@ -35,13 +35,13 @@ final class Logs {
 		// Handle clear action.
 		if ( isset( $_POST['matrix_bogo_clear_logs'] ) ) {
 			check_admin_referer( 'matrix_bogo_clear_logs_nonce', 'matrix_bogo_clear_logs_nonce_field' );
-			$days = max( 0, (int) ( $_POST['prune_days'] ?? 0 ) );
+			$days = max( 0, absint( wp_unslash( $_POST['prune_days'] ?? 0 ) ) );
 			$this->repo->prune( $days );
 			add_settings_error( 'matrix_bogo_logs', 'pruned', __( 'Logs cleared.', 'matrix-bogo' ), 'success' );
 		}
 
 		$per_page = 50;
-		$page     = max( 1, (int) ( $_GET['paged'] ?? 1 ) );
+		$page     = max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) );
 		$level    = sanitize_key( $_GET['level'] ?? '' );
 		$search   = sanitize_text_field( wp_unslash( $_GET['s'] ?? '' ) );
 

@@ -250,9 +250,9 @@ final class PromotionsList {
 											$names = [];
 											foreach ( $ids as $pid ) {
 												$p       = wc_get_product( $pid );
-												$names[] = $p ? esc_html( $p->get_name() . ' #' . $pid ) : '#' . $pid;
-											}
-											echo '<dt>Trigger Products</dt><dd>' . ( $names ? implode( ', ', $names ) : '—' ) . '</dd>';
+											$names[] = $p ? $p->get_name() . ' #' . $pid : '#' . $pid;
+										}
+										echo '<dt>Trigger Products</dt><dd>' . ( $names ? esc_html( implode( ', ', $names ) ) : '—' ) . '</dd>';
 											echo '<dt>Trigger Qty</dt><dd>' . esc_html( $rule_data['trigger_quantity'] ?? '1' ) . '</dd>';
 										} elseif ( 'spend_amount_get_gift' === $rtype ) {
 											echo '<dt>Min. Spend</dt><dd>' . wp_kses_post( wc_price( (float) ( $rule_data['min_amount'] ?? 0 ) ) ) . '</dd>';
@@ -264,10 +264,10 @@ final class PromotionsList {
 											foreach ( $cat_ids as $tid ) {
 												$term        = get_term( $tid, 'product_cat' );
 												$cat_names[] = ( $term && ! is_wp_error( $term ) )
-													? esc_html( $term->name . ' #' . $tid )
-													: '#' . $tid;
-											}
-											echo '<dt>Trigger Categories</dt><dd>' . ( $cat_names ? implode( ', ', $cat_names ) : '—' ) . '</dd>';
+												? $term->name . ' #' . $tid
+												: '#' . $tid;
+										}
+										echo '<dt>Trigger Categories</dt><dd>' . ( $cat_names ? esc_html( implode( ', ', $cat_names ) ) : '—' ) . '</dd>';
 											echo '<dt>Trigger Qty</dt><dd>' . esc_html( $rule_data['trigger_quantity'] ?? '1' ) . '</dd>';
 										}
 										?>

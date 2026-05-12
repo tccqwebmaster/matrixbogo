@@ -48,6 +48,12 @@ final class Autoloader {
 
 		// Strip the base namespace and convert to a file path.
 		$relative = substr( $class, strlen( self::BASE_NAMESPACE ) );
+
+		// Guard against path traversal attempts.
+		if ( false !== strpos( $relative, '..' ) ) {
+			return;
+		}
+
 		$file      = self::$base_dir . str_replace( '\\', DIRECTORY_SEPARATOR, $relative ) . '.php';
 
 		if ( file_exists( $file ) ) {

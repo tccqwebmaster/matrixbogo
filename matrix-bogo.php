@@ -3,15 +3,16 @@
  * Plugin Name:       Matrix BOGO WooCommerce Promotion
  * Plugin URI:        https://matrixplugins.com/matrix-bogo
  * Description:       Enterprise-grade WooCommerce BOGO & promotion engine with advanced rule builder, gift selector, analytics, and more.
- * Version:           1.0.8
+ * Version:           1.0.9
  * Author:            Matrix Plugins
  * Author URI:        https://matrixplugins.com
  * Text Domain:       matrix-bogo
  * Domain Path:       /languages
  * Requires at least: 6.0
- * Requires PHP:      8.1
+ * Tested up to:       6.9
+ * Requires PHP:       8.1
  * WC requires at least: 8.0
- * WC tested up to:   9.6
+ * WC tested up to:   10.0
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  *
