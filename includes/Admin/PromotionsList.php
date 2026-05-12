@@ -42,6 +42,7 @@ final class PromotionsList {
 		'spend_amount_get_gift'  => 'Spend Amount Get Gift',
 		'cart_quantity_get_gift' => 'Cart Qty Get Gift',
 		'category_get_gift'      => 'Category Get Gift',
+		'tiered_pricing'         => 'Tiered / Volume Pricing',
 	];
 
 	/** Human-readable condition type labels. */

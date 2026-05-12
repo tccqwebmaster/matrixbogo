@@ -77,6 +77,7 @@ final class PromotionEngine {
 		$this->register_type( 'spend_amount_get_gift',  Types\SpendAmountGetGift::class );
 		$this->register_type( 'cart_quantity_get_gift', Types\CartQuantityGetGift::class );
 		$this->register_type( 'category_get_gift',      Types\CategoryGetGift::class );
+		$this->register_type( 'tiered_pricing',         Types\TieredPricing::class );
 
 		do_action( 'matrix_bogo_register_promotion_types', $this );
 	}

@@ -16,33 +16,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Class Frontend
- */
 final class Frontend {
 
-	/** @var PromotionEngine */
 	private PromotionEngine $engine;
-
-	/** @var ProductPage */
-	private ProductPage $product_page;
-
-	/** @var CartPage */
-	private CartPage $cart_page;
-
-	/** @var CheckoutPage */
-	private CheckoutPage $checkout_page;
+	private ProductPage     $product_page;
+	private CartPage        $cart_page;
+	private CheckoutPage    $checkout_page;
+	private ProgressBar     $progress_bar;
+	private CountdownTimer  $countdown_timer;
 
 	public function __construct( PromotionEngine $engine ) {
-		$this->engine        = $engine;
-		$this->product_page  = new ProductPage( $engine );
-		$this->cart_page     = new CartPage( $engine );
-		$this->checkout_page = new CheckoutPage( $engine );
+		$this->engine          = $engine;
+		$this->product_page    = new ProductPage( $engine );
+		$this->cart_page       = new CartPage( $engine );
+		$this->checkout_page   = new CheckoutPage( $engine );
+		$this->progress_bar    = new ProgressBar( $engine );
+		$this->countdown_timer = new CountdownTimer( $engine );
 	}
 
 	public function init( Loader $loader ): void {
 		$this->product_page->init( $loader );
 		$this->cart_page->init( $loader );
 		$this->checkout_page->init( $loader );
+		$this->progress_bar->init( $loader );
+		$this->countdown_timer->init( $loader );
 	}
 }

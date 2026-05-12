@@ -69,6 +69,14 @@ final class Assets {
 
 		wp_enqueue_script(
 			'matrix-bogo-gift-popup',
+		wp_enqueue_script(
+			'matrix-bogo-countdown',
+			MATRIX_BOGO_PLUGIN_URL . 'assets/js/countdown.js',
+			[ 'jquery', 'matrix-bogo-frontend' ],
+			MATRIX_BOGO_VERSION,
+			true
+		);
+		
 			MATRIX_BOGO_PLUGIN_URL . 'assets/js/gift-popup.js',
 			[ 'jquery', 'matrix-bogo-frontend' ],
 			MATRIX_BOGO_VERSION,

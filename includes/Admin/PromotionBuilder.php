@@ -350,6 +350,10 @@ final class PromotionBuilder {
 			'cart_quantity_get_gift' => [
 				[ 'key' => 'min_quantity',         'label' => __( 'Minimum Cart Quantity', 'matrix-bogo' ), 'type' => 'number', 'placeholder' => '1' ],
 			],
+			'tiered_pricing'         => [
+				[ 'key' => 'trigger_product_ids', 'label' => __( 'Products (empty = all)', 'matrix-bogo' ), 'type' => 'product_multi', 'placeholder' => __( 'Leave blank for sitewide', 'matrix-bogo' ) ],
+				[ 'key' => 'apply_to',           'label' => __( 'Apply tiers to', 'matrix-bogo' ),         'type' => 'text',         'placeholder' => 'product or cart' ],
+			],
 			'category_get_gift'      => [
 				[ 'key' => 'trigger_category_ids', 'label' => __( 'Trigger Categories', 'matrix-bogo' ), 'type' => 'category_multi', 'placeholder' => __( 'Search by category name or ID', 'matrix-bogo' ) ],
 				[ 'key' => 'trigger_quantity',     'label' => __( 'Trigger Quantity', 'matrix-bogo' ),   'type' => 'number',          'placeholder' => '1' ],
@@ -430,6 +434,7 @@ final class PromotionBuilder {
 			'spend_amount_get_gift'    => __( 'Spend Amount Get Gift', 'matrix-bogo' ),
 			'cart_quantity_get_gift'   => __( 'Cart Quantity Get Gift', 'matrix-bogo' ),
 			'category_get_gift'        => __( 'Category Get Gift', 'matrix-bogo' ),
+			'tiered_pricing'           => __( 'Tiered / Volume Pricing', 'matrix-bogo' ),
 		];
 	}
 }

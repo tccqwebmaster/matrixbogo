@@ -1,477 +1,192 @@
 /* =========================================================
-   Matrix BOGO – Frontend Styles (complete)
-   Includes all original styles + gift popup modal (was missing)
+   Matrix BOGO – Premium Frontend Design  v1.1.0
+   Palette: Violet #4f46e5  Gold #f59e0b  Emerald #10b981
    ========================================================= */
-
-/* ── Product Badge ──────────────────────────────────────── */
-.matrix-bogo-badge {
-	position: absolute;
-	top: 10px;
-	left: 10px;
-	z-index: 10;
-	background: #e63946;
-	color: #fff;
-	font-size: .7rem;
-	font-weight: 700;
-	padding: 3px 8px;
-	border-radius: 4px;
-	text-transform: uppercase;
-	letter-spacing: .05em;
-	pointer-events: none;
+:root {
+	--mb-primary:       #4f46e5;
+	--mb-primary-dark:  #3730a3;
+	--mb-primary-light: #ede9fe;
+	--mb-gold:          #f59e0b;
+	--mb-gold-dark:     #d97706;
+	--mb-gold-light:    #fef3c7;
+	--mb-emerald:       #10b981;
+	--mb-emerald-light: #d1fae5;
+	--mb-red:           #ef4444;
+	--mb-red-light:     #fee2e2;
+	--mb-text:          #1e1b4b;
+	--mb-text-muted:    #6b7280;
+	--mb-border:        rgba(79,70,229,.12);
+	--mb-border-strong: rgba(79,70,229,.28);
+	--mb-surface:       #ffffff;
+	--mb-surface-2:     #fafafa;
+	--mb-gradient:      linear-gradient(135deg,#4f46e5 0%,#7c3aed 50%,#ec4899 100%);
+	--mb-gradient-gold: linear-gradient(135deg,#f59e0b 0%,#ef4444 100%);
+	--mb-radius:        12px;
+	--mb-radius-lg:     18px;
+	--mb-shadow:        0 4px 24px rgba(79,70,229,.10);
+	--mb-shadow-lg:     0 8px 40px rgba(79,70,229,.16);
+	--mb-transition:    all .22s cubic-bezier(.4,0,.2,1);
 }
 
-/* ── Product Promotion Panel ────────────────────────────── */
-.matrix-bogo-product-promotions { margin: 16px 0; }
+/* Box-sizing scope */
+.mb-progress-region *,.mb-countdown-banner *,.mb-product-timer *,.mb-gift-section *,.matrix-bogo-popup *,.matrix-bogo-gift-section *{box-sizing:border-box}
 
-.matrix-bogo-product-promo-badge {
-	display: flex;
-	align-items: flex-start;
-	gap: 8px;
-	padding: 10px 14px;
-	background: #fff8e1;
-	border-left: 4px solid #f59e0b;
-	border-radius: 4px;
-	margin-bottom: 8px;
+/* ── 1. PROGRESS BAR ─────────────────────────────────── */
+.mb-progress-region{margin:0 0 24px}
+.mb-progress-card{position:relative;background:var(--mb-surface);border:1px solid var(--mb-border);border-radius:var(--mb-radius-lg);padding:18px 22px 16px;margin-bottom:10px;overflow:hidden;transition:var(--mb-transition);box-shadow:var(--mb-shadow)}
+.mb-progress-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4f46e5,#7c3aed,#ec4899,#f59e0b,#4f46e5);background-size:300% 100%;animation:mb-stripe 4s linear infinite}
+@keyframes mb-stripe{0%{background-position:0% 0%}100%{background-position:300% 0%}}
+.mb-progress-card--done::before{background:linear-gradient(90deg,#10b981,#34d399,#10b981);background-size:200% 100%;animation:mb-stripe-done 2s linear infinite}
+@keyframes mb-stripe-done{0%{background-position:0% 0%}100%{background-position:200% 0%}}
+.mb-progress-message{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.mb-progress-emoji{font-size:1.4rem;flex-shrink:0;animation:mb-gift-bob 2.4s ease-in-out infinite}
+@keyframes mb-gift-bob{0%,100%{transform:translateY(0) rotate(0deg)}30%{transform:translateY(-5px) rotate(-8deg)}60%{transform:translateY(-3px) rotate(4deg)}}
+.mb-progress-card--done .mb-progress-emoji{animation:mb-done-pop .4s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes mb-done-pop{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0deg)}}
+.mb-progress-text{font-size:.9rem;color:var(--mb-text-muted);line-height:1.4}
+.mb-progress-text strong{color:var(--mb-primary);font-weight:600}
+.mb-progress-track{height:10px;background:#f3f4f6;border-radius:100px;overflow:hidden;position:relative}
+.mb-progress-fill{height:100%;border-radius:100px;background:var(--mb-gradient);position:relative;min-width:4px;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.mb-progress-fill::after{content:'';position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:mb-shimmer 2.2s ease-in-out infinite}
+@keyframes mb-shimmer{0%{left:-80%}100%{left:140%}}
+.mb-progress-card--done .mb-progress-fill{background:linear-gradient(90deg,#10b981,#34d399)}
+.mb-progress-pct-label{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:.6rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:.04em}
+.mb-progress-timer{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:.78rem;color:var(--mb-text-muted)}
+.mb-progress-timer-label{opacity:.7}
+.mb-inline-countdown{font-weight:600;color:var(--mb-gold-dark);font-variant-numeric:tabular-nums}
+.mb-timer--urgent .mb-inline-countdown{color:var(--mb-red);animation:mb-pulse-text 1s ease-in-out infinite}
+@keyframes mb-pulse-text{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* ── 2. COUNTDOWN BANNER ─────────────────────────────── */
+.mb-countdown-banner{background:var(--mb-text);border-radius:var(--mb-radius);padding:14px 20px;margin-bottom:20px;animation:mb-banner-in .3s cubic-bezier(.4,0,.2,1) both}
+@keyframes mb-banner-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.mb-countdown--warn{background:linear-gradient(135deg,#78350f,#92400e)}
+.mb-countdown--urgent{background:linear-gradient(135deg,#7f1d1d,#991b1b)}
+.mb-countdown-banner-inner{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mb-countdown-fire{font-size:1.5rem;flex-shrink:0;animation:mb-fire .8s ease-in-out infinite alternate}
+@keyframes mb-fire{from{transform:scale(1) rotate(-5deg)}to{transform:scale(1.1) rotate(5deg)}}
+.mb-countdown-info{display:flex;flex-direction:column;gap:2px}
+.mb-countdown-name{font-size:.88rem;font-weight:600;color:#fff}
+.mb-countdown-label{font-size:.72rem;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.07em}
+.mb-countdown-clock{display:flex;align-items:center;gap:6px;margin-left:auto}
+.mb-clock-unit{display:flex;flex-direction:column;align-items:center}
+.mb-clock-val{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;font-size:1.45rem;font-weight:700;color:#fff;padding:5px 10px;min-width:50px;text-align:center;font-variant-numeric:tabular-nums;transition:transform .15s,background .15s}
+.mb-clock-flip{transform:scale(1.12);background:rgba(245,158,11,.35)!important;border-color:rgba(245,158,11,.55)!important}
+.mb-countdown--urgent .mb-clock-val{animation:mb-urgency-pulse .7s ease-in-out infinite}
+@keyframes mb-urgency-pulse{0%,100%{background:rgba(255,255,255,.12)}50%{background:rgba(239,68,68,.4)}}
+.mb-clock-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-top:3px}
+.mb-clock-sep{font-size:1.3rem;font-weight:700;color:rgba(255,255,255,.35);padding-bottom:14px;animation:mb-blink 1s step-start infinite}
+@keyframes mb-blink{0%,100%{opacity:1}50%{opacity:.15}}
+
+/* ── 3. PRODUCT PAGE TIMER ───────────────────────────── */
+.mb-product-timer{display:inline-flex;align-items:center;gap:7px;background:var(--mb-gold-light);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:8px 14px;margin:12px 0;font-size:.88rem;color:#92400e}
+.mb-product-timer-icon{font-size:1rem}
+.mb-product-timer-value{font-variant-numeric:tabular-nums;font-weight:700;color:var(--mb-gold-dark)}
+.mb-timer--warn .mb-product-timer-value{color:#d97706}
+.mb-timer--urgent .mb-product-timer-value{color:var(--mb-red)}
+
+/* ── 4. SHOP PAGE TICKER ─────────────────────────────── */
+.mb-shop-ticker{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--mb-gradient);color:#fff;padding:10px 20px;border-radius:8px;margin-bottom:20px;font-size:.88rem;font-weight:500}
+.mb-shop-ticker-time{font-weight:700;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.18);padding:2px 8px;border-radius:4px}
+
+/* ── 5. CART GIFT SECTION (inline) ──────────────────── */
+.matrix-bogo-gift-section{margin:24px 0;padding:22px;background:linear-gradient(135deg,#fefce8 0%,#fff7ed 100%);border:1.5px solid rgba(245,158,11,.3);border-radius:var(--mb-radius-lg);position:relative;overflow:hidden}
+.matrix-bogo-gift-section::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--mb-gradient-gold);border-radius:var(--mb-radius-lg) var(--mb-radius-lg) 0 0}
+.matrix-bogo-gift-title{font-size:1.05rem;font-weight:700;color:#92400e;margin:0 0 16px;display:flex;align-items:center;gap:8px}
+.matrix-bogo-gift-group{margin-bottom:20px}
+.matrix-bogo-gift-group-label{font-weight:600;font-size:.9rem;color:var(--mb-text);margin-bottom:12px}
+.matrix-bogo-gift-products{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.matrix-bogo-gift-item{position:relative}
+.matrix-bogo-gift-item label{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;padding:13px 10px;border:1.5px solid #e5e7eb;border-radius:var(--mb-radius);background:var(--mb-surface);transition:var(--mb-transition);text-align:center;width:100%}
+.matrix-bogo-gift-item label:hover{border-color:var(--mb-primary);background:var(--mb-primary-light);transform:translateY(-2px);box-shadow:0 6px 20px rgba(79,70,229,.12)}
+.matrix-bogo-gift-item input[type="radio"]{position:absolute;opacity:0;width:0;height:0}
+.matrix-bogo-gift-item label:has(input:checked){border-color:var(--mb-primary);background:var(--mb-primary-light);box-shadow:0 0 0 3px rgba(79,70,229,.18);transform:translateY(-2px)}
+.matrix-bogo-gift-item label:has(input:checked)::after{content:'✓';position:absolute;top:6px;right:6px;width:20px;height:20px;background:var(--mb-primary);color:#fff;font-size:.68rem;font-weight:700;border-radius:50%;text-align:center;line-height:20px}
+.matrix-bogo-gift-item img{width:72px;height:72px;object-fit:cover;border-radius:8px;background:#f3f4f6}
+.matrix-bogo-gift-name{font-size:.78rem;font-weight:600;color:var(--mb-text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.matrix-bogo-gift-free-label{display:inline-flex;align-items:center;background:var(--mb-emerald);color:#fff;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em}
+.matrix-bogo-add-gift-btn,.matrix-bogo-add-gift-btn.button{margin-top:14px;background:var(--mb-gradient)!important;color:#fff!important;border:none!important;border-radius:8px!important;padding:9px 20px!important;font-size:.88rem!important;font-weight:600!important;cursor:pointer;transition:var(--mb-transition)!important;box-shadow:0 4px 14px rgba(79,70,229,.3)!important}
+.matrix-bogo-add-gift-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,.4)!important}
+
+/* ── 6. FREE LABEL IN CART ───────────────────────────── */
+.matrix-bogo-free-label{display:inline-flex;align-items:center;gap:3px;background:var(--mb-emerald);color:#fff;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.04em}
+
+/* ── 7. CART PROMOTION NOTICE ────────────────────────── */
+.matrix-bogo-cart-promotions{margin:0 0 16px}
+.matrix-bogo-promo-notice{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--mb-emerald-light);border-left:4px solid var(--mb-emerald);border-radius:0 8px 8px 0;margin-bottom:8px;color:#065f46;font-size:.9rem;animation:mb-notice-in .3s cubic-bezier(.4,0,.2,1) both}
+@keyframes mb-notice-in{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── 8. PRODUCT BADGE ────────────────────────────────── */
+.matrix-bogo-badge{position:absolute;top:10px;left:10px;z-index:10;background:var(--mb-gradient);color:#fff;font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;box-shadow:0 2px 10px rgba(79,70,229,.35);pointer-events:none}
+.matrix-bogo-product-promotions{margin:14px 0}
+.matrix-bogo-product-promo-badge{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:var(--mb-primary-light);border-left:4px solid var(--mb-primary);border-radius:0 10px 10px 0;margin-bottom:8px}
+.matrix-bogo-promo-icon{font-size:1.1rem;line-height:1;flex-shrink:0}
+.matrix-bogo-promo-name{font-weight:600;color:var(--mb-primary);font-size:.9rem}
+.matrix-bogo-promo-desc{color:var(--mb-text-muted);font-size:.82rem;margin-left:auto}
+
+/* ── 9. CHECKOUT PROMOTIONS ──────────────────────────── */
+.matrix-bogo-checkout-promotions{padding:14px 18px;background:var(--mb-emerald-light);border-radius:var(--mb-radius);margin-bottom:20px;color:#065f46}
+.matrix-bogo-checkout-promotions h3{margin:0 0 6px;font-size:.92rem}
+.matrix-bogo-checkout-promotions ul{margin:0;padding-left:18px;font-size:.88rem}
+
+/* ── 10. GIFT POPUP MODAL ────────────────────────────── */
+.matrix-bogo-popup{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px}
+.matrix-bogo-popup-overlay{position:absolute;inset:0;background:rgba(15,10,60,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.matrix-bogo-popup-content{position:relative;z-index:1;background:var(--mb-surface);border-radius:var(--mb-radius-lg);box-shadow:var(--mb-shadow-lg),0 0 0 1px rgba(79,70,229,.1);width:100%;max-width:660px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:mb-modal-in .28s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes mb-modal-in{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.matrix-bogo-popup-content::before{content:'';display:block;height:4px;flex-shrink:0;background:var(--mb-gradient)}
+.matrix-bogo-popup-close{position:absolute;top:16px;right:18px;background:#f3f4f6;border:none;width:30px;height:30px;border-radius:50%;font-size:1rem;line-height:30px;text-align:center;color:var(--mb-text-muted);cursor:pointer;transition:var(--mb-transition);z-index:2}
+.matrix-bogo-popup-close:hover{background:var(--mb-red-light);color:var(--mb-red);transform:rotate(90deg)}
+.matrix-bogo-popup-content>h2{margin:0;padding:20px 52px 4px 24px;font-size:1.15rem;font-weight:700;color:var(--mb-text)}
+.matrix-bogo-popup-subtitle{margin:0 24px 18px;font-size:.88rem;color:var(--mb-text-muted);line-height:1.5}
+.matrix-bogo-popup-products{flex:1;overflow-y:auto;padding:0 20px 16px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;align-content:start;scrollbar-width:thin;scrollbar-color:var(--mb-border) transparent}
+.matrix-bogo-popup-loading{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:48px 0;color:var(--mb-text-muted);font-size:.9rem}
+.matrix-bogo-popup-loading::before{content:'';width:36px;height:36px;border:3px solid var(--mb-primary-light);border-top-color:var(--mb-primary);border-radius:50%;animation:mb-spin .8s linear infinite}
+@keyframes mb-spin{to{transform:rotate(360deg)}}
+.matrix-bogo-popup-products .matrix-bogo-gift-item label{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px;border:1.5px solid #e5e7eb;border-radius:var(--mb-radius);background:var(--mb-surface);cursor:pointer;width:100%;text-align:center;transition:var(--mb-transition)}
+.matrix-bogo-popup-products .matrix-bogo-gift-item label:hover{border-color:var(--mb-primary);background:var(--mb-primary-light);transform:translateY(-3px);box-shadow:0 8px 24px rgba(79,70,229,.14)}
+.matrix-bogo-popup-products .matrix-bogo-gift-item label:has(input:checked){border-color:var(--mb-primary);background:var(--mb-primary-light);box-shadow:0 0 0 3px rgba(79,70,229,.2),0 8px 24px rgba(79,70,229,.14);transform:translateY(-3px)}
+.matrix-bogo-popup-products .matrix-bogo-gift-item input[type="radio"]{position:absolute;opacity:0;width:0;height:0}
+.matrix-bogo-popup-products .matrix-bogo-gift-item label:has(input:checked)::after{content:'✓';position:absolute;top:7px;right:7px;width:22px;height:22px;background:var(--mb-gradient);color:#fff;font-size:.72rem;font-weight:700;border-radius:50%;text-align:center;line-height:22px;animation:mb-tick-pop .25s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes mb-tick-pop{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0deg)}}
+.matrix-bogo-popup-products img{width:84px;height:84px;object-fit:cover;border-radius:10px;background:#f3f4f6;transition:transform .2s}
+.matrix-bogo-popup-products .matrix-bogo-gift-item label:hover img{transform:scale(1.05)}
+.matrix-bogo-popup-products .matrix-bogo-gift-name{font-size:.78rem;font-weight:600;color:var(--mb-text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.matrix-bogo-popup-actions{display:flex;align-items:center;gap:10px;padding:16px 24px;border-top:1px solid #f3f4f6;background:var(--mb-surface-2);flex-shrink:0}
+#matrix-bogo-popup-add-btn{background:var(--mb-gradient);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:.92rem;font-weight:600;cursor:pointer;transition:var(--mb-transition);box-shadow:0 4px 14px rgba(79,70,229,.3)}
+#matrix-bogo-popup-add-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 22px rgba(79,70,229,.42)}
+#matrix-bogo-popup-add-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.matrix-bogo-popup-skip{background:none;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 18px;font-size:.88rem;color:var(--mb-text-muted);cursor:pointer;transition:var(--mb-transition)}
+.matrix-bogo-popup-skip:hover{border-color:var(--mb-border-strong);color:var(--mb-text)}
+body.matrix-bogo-popup-open{overflow:hidden;touch-action:none}
+
+/* ── 11. RESPONSIVE ──────────────────────────────────── */
+@media(max-width:680px){
+	.matrix-bogo-popup{align-items:flex-end;padding:0}
+	.matrix-bogo-popup-content{max-height:88vh;border-radius:20px 20px 0 0;animation:mb-sheet-up .3s cubic-bezier(.4,0,.2,1) both}
+	@keyframes mb-sheet-up{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+	.matrix-bogo-popup-products{grid-template-columns:repeat(auto-fill,minmax(115px,1fr))}
+	.matrix-bogo-popup-actions{flex-direction:column}
+	#matrix-bogo-popup-add-btn,.matrix-bogo-popup-skip{width:100%;text-align:center}
+	.mb-countdown-banner-inner{flex-wrap:wrap;gap:10px}
+	.mb-countdown-clock{margin-left:0}
+	.mb-clock-val{font-size:1.2rem;min-width:40px;padding:4px 8px}
+	.matrix-bogo-gift-products{grid-template-columns:1fr 1fr}
+}
+@media(max-width:400px){
+	.mb-clock-val{font-size:1rem;min-width:36px;padding:3px 6px}
 }
 
-.matrix-bogo-promo-icon  { font-size: 1.2rem; line-height: 1; }
-.matrix-bogo-promo-name  { font-weight: 600; }
-.matrix-bogo-promo-desc  { color: #555; font-size: .875rem; margin-left: auto; }
+/* ── 12. RTL ─────────────────────────────────────────── */
+.rtl .matrix-bogo-badge{left:auto;right:10px}
+.rtl .matrix-bogo-promo-notice,.rtl .matrix-bogo-product-promo-badge{border-left:none;border-right:4px solid currentColor}
+.rtl .matrix-bogo-popup-close{right:auto;left:18px}
+.rtl .matrix-bogo-popup-actions{flex-direction:row-reverse}
+.rtl .matrix-bogo-checkout-promotions ul{padding-left:0;padding-right:18px}
 
-/* ── Cart Promotion Summary ─────────────────────────────── */
-.matrix-bogo-promotion-summary { margin: 0 0 20px; }
-
-.matrix-bogo-promo-notice {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 10px 16px;
-	background: #d4edda;
-	border: 1px solid #c3e6cb;
-	border-radius: 4px;
-	margin-bottom: 6px;
-	color: #155724;
-}
-
-/* ── Cart Notices ───────────────────────────────────────── */
-.matrix-bogo-cart-promotions { margin: 0 0 16px; }
-
-.matrix-bogo-promo-notice.matrix-bogo-active {
-	background: #d4edda;
-	border: 1px solid #c3e6cb;
-	color: #155724;
-	padding: 10px 14px;
-	border-radius: 4px;
-	margin-bottom: 6px;
-	font-size: .9rem;
-}
-
-/* ── Free label in cart line item ───────────────────────── */
-.matrix-bogo-free-label {
-	display: inline-block;
-	background: #28a745;
-	color: #fff;
-	font-size: .72rem;
-	font-weight: 700;
-	padding: 2px 8px;
-	border-radius: 10px;
-	letter-spacing: .04em;
-}
-
-/* ── Cart Gift Section (inline, non-popup) ──────────────── */
-.matrix-bogo-gift-section {
-	margin: 24px 0;
-	padding: 20px;
-	background: #fff;
-	border: 2px dashed #f59e0b;
-	border-radius: 8px;
-}
-
-.matrix-bogo-gift-title {
-	color: #92400e;
-	margin-top: 0;
-	font-size: 1.1rem;
-}
-
-.matrix-bogo-gift-group { margin-bottom: 24px; }
-.matrix-bogo-gift-group-label { font-weight: 600; margin-bottom: 12px; }
-
-.matrix-bogo-gift-products {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12px;
-}
-
-.matrix-bogo-gift-item label {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 6px;
-	cursor: pointer;
-	padding: 12px;
-	border: 2px solid #e0e0e0;
-	border-radius: 6px;
-	background: #fafafa;
-	transition: border-color .2s, background .2s;
-	width: 130px;
-	text-align: center;
-}
-
-.matrix-bogo-gift-item input[type="radio"] {
-	position: absolute;
-	opacity: 0;
-	width: 0;
-	height: 0;
-}
-
-.matrix-bogo-gift-item label:has(input:checked) {
-	border-color: #2271b1;
-	background: #eef5fb;
-}
-
-.matrix-bogo-gift-name       { font-size: .85rem; font-weight: 600; }
-
-.matrix-bogo-gift-free-label {
-	display: inline-block;
-	background: #e63946;
-	color: #fff;
-	font-size: .65rem;
-	font-weight: 700;
-	padding: 2px 8px;
-	border-radius: 10px;
-}
-
-.matrix-bogo-add-gift-btn { margin-top: 12px; }
-
-/* ── Checkout Applied Promotions ────────────────────────── */
-.matrix-bogo-checkout-promotions {
-	padding: 12px 16px;
-	background: #d4edda;
-	border-radius: 4px;
-	margin-bottom: 20px;
-	color: #155724;
-}
-
-.matrix-bogo-checkout-promotions h3 { margin: 0 0 6px; font-size: .9rem; }
-.matrix-bogo-checkout-promotions ul { margin: 0; padding-left: 18px; }
-
-/* ==========================================================
-   GIFT SELECTOR POPUP / MODAL
-   FIX: This section was completely absent from the original
-   frontend.css. GiftPopup::render_popup_container() was
-   outputting the #matrix-bogo-gift-popup template in the
-   footer but it had zero styles, rendering it invisible.
-   ========================================================== */
-
-/* Backdrop */
-.matrix-bogo-popup {
-	position: fixed;
-	inset: 0;
-	z-index: 999999;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 16px;
-}
-
-.matrix-bogo-popup-overlay {
-	position: absolute;
-	inset: 0;
-	background: rgba(0, 0, 0, .55);
-	backdrop-filter: blur(2px);
-	-webkit-backdrop-filter: blur(2px);
-}
-
-/* Modal card */
-.matrix-bogo-popup-content {
-	position: relative;
-	z-index: 1;
-	background: #fff;
-	border-radius: 12px;
-	box-shadow: 0 20px 60px rgba(0, 0, 0, .22), 0 4px 16px rgba(0, 0, 0, .08);
-	width: 100%;
-	max-width: 640px;
-	max-height: 90vh;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-	animation: mbPopupIn .22s cubic-bezier(.4, 0, .2, 1) both;
-}
-
-@keyframes mbPopupIn {
-	from { opacity: 0; transform: scale(.94) translateY(12px); }
-	to   { opacity: 1; transform: scale(1)  translateY(0); }
-}
-
-/* Close button */
-.matrix-bogo-popup-close {
-	position: absolute;
-	top: 14px;
-	right: 16px;
-	background: none;
-	border: none;
-	font-size: 1.4rem;
-	line-height: 1;
-	color: #999;
-	cursor: pointer;
-	padding: 4px 6px;
-	border-radius: 4px;
-	transition: color .15s, background .15s;
-	z-index: 2;
-}
-
-.matrix-bogo-popup-close:hover {
-	color: #333;
-	background: #f0f0f0;
-}
-
-/* Modal header */
-.matrix-bogo-popup-content > h2 {
-	margin: 0;
-	padding: 22px 52px 6px 24px;
-	font-size: 1.15rem;
-	font-weight: 700;
-	color: #1a1a1a;
-	border: none;
-}
-
-.matrix-bogo-popup-subtitle {
-	margin: 0 24px 16px;
-	font-size: .88rem;
-	color: #666;
-	line-height: 1.5;
-}
-
-/* Product grid (scrollable) */
-.matrix-bogo-popup-products {
-	flex: 1;
-	overflow-y: auto;
-	padding: 0 16px 16px 24px;
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
-	gap: 10px;
-	align-content: start;
-}
-
-/* Loading spinner wrapper */
-.matrix-bogo-popup-loading {
-	grid-column: 1 / -1;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 12px;
-	padding: 40px 0;
-	color: #888;
-	font-size: .9rem;
-}
-
-/* Product card inside popup */
-.matrix-bogo-popup-products .matrix-bogo-gift-item {
-	position: relative;
-}
-
-.matrix-bogo-popup-products .matrix-bogo-gift-item label {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 8px;
-	padding: 12px 8px;
-	border: 1.5px solid #e2e2e2;
-	border-radius: 8px;
-	background: #fafafa;
-	cursor: pointer;
-	width: 100%;
-	text-align: center;
-	transition: border-color .18s, background .18s, box-shadow .18s;
-}
-
-.matrix-bogo-popup-products .matrix-bogo-gift-item label:hover {
-	border-color: #9bc4f0;
-	background: #f0f7ff;
-}
-
-.matrix-bogo-popup-products .matrix-bogo-gift-item label:has(input:checked) {
-	border-color: #2271b1;
-	background: #eef5fb;
-	box-shadow: 0 0 0 3px rgba(34, 113, 177, .18);
-}
-
-.matrix-bogo-popup-products .matrix-bogo-gift-item input[type="radio"] {
-	position: absolute;
-	opacity: 0;
-	width: 0;
-	height: 0;
-}
-
-/* Tick badge when selected */
-.matrix-bogo-popup-products .matrix-bogo-gift-item label:has(input:checked)::after {
-	content: '\2713';
-	position: absolute;
-	top: 6px;
-	right: 6px;
-	width: 20px;
-	height: 20px;
-	line-height: 20px;
-	background: #2271b1;
-	color: #fff;
-	font-size: .7rem;
-	font-weight: 700;
-	border-radius: 50%;
-	text-align: center;
-}
-
-.matrix-bogo-popup-products img {
-	width: 80px;
-	height: 80px;
-	object-fit: cover;
-	border-radius: 6px;
-	background: #eee;
-}
-
-.matrix-bogo-popup-products .matrix-bogo-gift-name {
-	font-size: .78rem;
-	font-weight: 600;
-	color: #222;
-	line-height: 1.3;
-	/* 2-line clamp */
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-}
-
-.matrix-bogo-popup-products .matrix-bogo-gift-free-label {
-	background: #e63946;
-	color: #fff;
-	font-size: .64rem;
-	font-weight: 700;
-	padding: 2px 7px;
-	border-radius: 10px;
-	display: inline-block;
-}
-
-/* Actions bar */
-.matrix-bogo-popup-actions {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 14px 24px;
-	border-top: 1px solid #eee;
-	background: #fafafa;
-	flex-shrink: 0;
-}
-
-#matrix-bogo-popup-add-btn {
-	background: #2271b1;
-	color: #fff;
-	border: none;
-	border-radius: 6px;
-	padding: 9px 22px;
-	font-size: .9rem;
-	font-weight: 600;
-	cursor: pointer;
-	transition: background .18s, opacity .18s;
-}
-
-#matrix-bogo-popup-add-btn:hover:not(:disabled) {
-	background: #135e96;
-}
-
-#matrix-bogo-popup-add-btn:disabled {
-	opacity: .45;
-	cursor: not-allowed;
-}
-
-.matrix-bogo-popup-skip {
-	background: none;
-	border: 1px solid #ccc;
-	border-radius: 6px;
-	padding: 9px 16px;
-	font-size: .9rem;
-	color: #666;
-	cursor: pointer;
-	transition: border-color .18s, color .18s;
-}
-
-.matrix-bogo-popup-skip:hover {
-	border-color: #999;
-	color: #222;
-}
-
-/* Lock body scroll while popup open */
-body.matrix-bogo-popup-open {
-	overflow: hidden;
-	touch-action: none; /* iOS */
-}
-
-/* ── Responsive ─────────────────────────────────────────── */
-@media (max-width: 600px) {
-	/* Sheet-style slide-up on mobile */
-	.matrix-bogo-popup {
-		align-items: flex-end;
-		padding: 0;
-	}
-
-	.matrix-bogo-popup-content {
-		max-height: 90vh;
-		border-radius: 16px 16px 0 0;
-		animation: mbPopupSlideUp .28s cubic-bezier(.4, 0, .2, 1) both;
-	}
-
-	@keyframes mbPopupSlideUp {
-		from { opacity: 0; transform: translateY(100%); }
-		to   { opacity: 1; transform: translateY(0); }
-	}
-
-	.matrix-bogo-popup-products {
-		grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-	}
-
-	.matrix-bogo-popup-actions {
-		flex-direction: column;
-	}
-
-	#matrix-bogo-popup-add-btn,
-	.matrix-bogo-popup-skip {
-		width: 100%;
-		text-align: center;
-	}
-
-	.matrix-bogo-gift-products {
-		grid-template-columns: 1fr 1fr;
-	}
-}
-
-/* ── RTL ────────────────────────────────────────────────── */
-.rtl .matrix-bogo-badge {
-	left: auto;
-	right: 10px;
-}
-
-.rtl .matrix-bogo-product-promo-badge {
-	border-left: none;
-	border-right: 4px solid #f59e0b;
-}
-
-.rtl .matrix-bogo-popup-close {
-	right: auto;
-	left: 16px;
-}
-
-.rtl .matrix-bogo-popup-products .matrix-bogo-gift-item label:has(input:checked)::after {
-	right: auto;
-	left: 6px;
-}
-
-.rtl .matrix-bogo-checkout-promotions ul,
-.rtl .matrix-bogo-popup-actions {
-	flex-direction: row-reverse;
-}
-
-/* ── Accessibility: reduced motion ─────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-	.matrix-bogo-popup-content {
-		animation: none;
-	}
+/* ── 13. REDUCED MOTION ──────────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+	.mb-progress-card::before,.mb-progress-fill::after,.mb-progress-emoji,.mb-countdown-fire,.mb-clock-flip{animation:none!important}
+	.matrix-bogo-popup-content,.mb-countdown-banner{animation:none!important}
+	.matrix-bogo-gift-item label:hover,.matrix-bogo-popup-products .matrix-bogo-gift-item label:hover,#matrix-bogo-popup-add-btn:hover:not(:disabled){transform:none!important}
 }

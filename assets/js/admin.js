@@ -638,3 +638,12 @@
 	});
 
 })(jQuery);
+
+/* Matrix BOGO v1.1.0 additions — appended */
+(function($){
+	'use strict';
+	// Register tiered_pricing type in ruleDataFields (merges with existing object)
+	if (typeof ruleDataFields !== 'undefined') {
+		ruleDataFields['tiered_pricing'] = [];
+	}
+})(jQuery);
