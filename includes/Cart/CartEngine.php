@@ -140,7 +140,9 @@ final class CartEngine {
 
 		foreach ( $cart->get_cart() as $key => $item ) {
 			if ( ! empty( $item['matrix_bogo_gift'] ) && empty( $item['matrix_bogo_partial_discount'] ) ) {
-				$item['data']->set_price( 0 );
+				if ( isset( $item['data'] ) && $item['data'] instanceof \WC_Product ) {
+					$item['data']->set_price( 0 );
+				}
 			}
 		}
 	}
@@ -171,7 +173,10 @@ final class CartEngine {
 	 * @param string              $cart_key
 	 * @return \WC_Product
 	 */
-	public function gift_cart_item_product( \WC_Product $product, array $cart_item, string $cart_key ): \WC_Product {
+	public function gift_cart_item_product( $product, array $cart_item, string $cart_key ) {
+		if ( ! ( $product instanceof \WC_Product ) ) {
+			return $product;
+		}
 		if ( ! empty( $cart_item['matrix_bogo_gift'] ) && empty( $cart_item['matrix_bogo_partial_discount'] ) ) {
 			$product->set_price( 0 );
 		}

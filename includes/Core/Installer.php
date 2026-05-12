@@ -163,6 +163,7 @@ final class Installer {
 			'performance_mode'             => false,
 			'debug_mode'                   => false,
 			'delete_data_on_uninstall'     => false,
+			'show_notices'                 => true,
 			'analytics_enabled'            => true,
 			'license_key'                  => '',
 			'license_status'               => 'inactive',

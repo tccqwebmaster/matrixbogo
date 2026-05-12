@@ -46,6 +46,11 @@ final class ProgressBar {
 	// -----------------------------------------------------------------
 
 	public function init( Loader $loader ): void {
+		$settings = get_option( 'matrix_bogo_settings', [] );
+		if ( empty( $settings['progress_bar_enabled'] ) ) {
+			return;
+		}
+
 		$loader->add_action( 'woocommerce_before_cart',          [ $this, 'render' ], 4 );
 		$loader->add_action( 'woocommerce_before_checkout_form', [ $this, 'render' ], 4 );
 
