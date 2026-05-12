@@ -148,16 +148,23 @@ final class CartModifier {
 	private function apply_cheapest_free( \WC_Cart $cart, array $reward ): void {
 		$cheapest_price = PHP_FLOAT_MAX;
 		$cheapest_key   = '';
+		$total_qty      = 0;
 
 		foreach ( $cart->get_cart() as $key => $item ) {
 			if ( ! empty( $item['matrix_bogo_gift'] ) ) {
 				continue;
 			}
-			$price = (float) wc_get_price_excluding_tax( $item['data'] );
+			$total_qty += (int) $item['quantity'];
+			$price      = (float) wc_get_price_excluding_tax( $item['data'] );
 			if ( $price < $cheapest_price ) {
 				$cheapest_price = $price;
 				$cheapest_key   = $key;
 			}
+		}
+
+		// Need at least 2 items in the cart — you must "buy" something to get one free.
+		if ( $total_qty < 2 ) {
+			return;
 		}
 
 		if ( '' === $cheapest_key || $cheapest_price <= 0 ) {
