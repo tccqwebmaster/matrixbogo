@@ -31,10 +31,25 @@ final class Scheduler {
 		$loader->add_action( self::HOOK_EXPIRATION, [ new PromotionExpirationTask(), 'run' ] );
 		$loader->add_action( self::HOOK_PRUNE_LOGS, [ $this, 'run_prune_logs' ] );
 
-		// Schedule daily log prune.
-		if ( function_exists( 'as_next_scheduled_action' ) && ! as_next_scheduled_action( self::HOOK_PRUNE_LOGS ) ) {
+		// Schedule daily log prune – deferred until Action Scheduler data store is ready.
+		add_action( 'action_scheduler_stored_action', [ $this, 'maybe_schedule_log_prune' ], 1 );
+		add_action( 'action_scheduler_pre_init', [ $this, 'maybe_schedule_log_prune' ] );
+		add_action( 'init', [ $this, 'maybe_schedule_log_prune' ], 20 );
+	}
+
+	/**
+	 * Schedules the daily log prune action once Action Scheduler is initialized.
+	 */
+	public function maybe_schedule_log_prune(): void {
+		if ( ! function_exists( 'as_next_scheduled_action' ) ) {
+			return;
+		}
+		if ( ! as_next_scheduled_action( self::HOOK_PRUNE_LOGS ) ) {
 			as_schedule_recurring_action( time(), DAY_IN_SECONDS, self::HOOK_PRUNE_LOGS, [], 'matrix-bogo' );
 		}
+		remove_action( 'action_scheduler_stored_action', [ $this, 'maybe_schedule_log_prune' ], 1 );
+		remove_action( 'action_scheduler_pre_init', [ $this, 'maybe_schedule_log_prune' ] );
+		remove_action( 'init', [ $this, 'maybe_schedule_log_prune' ], 20 );
 	}
 
 	/**

@@ -157,7 +157,10 @@ final class CartEngine {
 	 * @param array<string,mixed> $cart_item
 	 * @return bool
 	 */
-	public function gift_is_purchasable( bool $purchasable, \WC_Product $product, array $cart_item ): bool {
+	public function gift_is_purchasable( bool $purchasable, $product, array $cart_item ): bool {
+		if ( ! $product instanceof \WC_Product ) {
+			return $purchasable;
+		}
 		if ( ! empty( $cart_item['matrix_bogo_gift'] ) ) {
 			return true;
 		}
