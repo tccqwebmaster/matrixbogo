@@ -590,7 +590,23 @@
 		// matrixBogoBuilderData is injected as an inline <script> by PromotionBuilder.php
 		const data = window.matrixBogoBuilderData || {};
 
-		window.matrixBogoConditions = Array.isArray(data.conditions) ? data.conditions : [];
+		// FIX: DB returns flat condition rows [{type,operator,value,group_id,sort_order},...].
+		// The builder needs a 2D array [[cond,cond],[cond]] (groups of conditions).
+		// Convert flat rows → grouped 2D on edit load.
+		const rawConds = Array.isArray(data.conditions) ? data.conditions : [];
+		if (rawConds.length && typeof rawConds[0] === 'object' && 'group_id' in rawConds[0]) {
+			// Flat DB rows — rebuild grouped structure.
+			const grouped = {};
+			rawConds.forEach(function (row) {
+				const g = parseInt(row.group_id, 10) || 0;
+				if (!grouped[g]) { grouped[g] = []; }
+				grouped[g].push({ type: row.type, operator: row.operator, value: row.value || '' });
+			});
+			const keys = Object.keys(grouped).map(Number).sort(function(a,b){return a-b;});
+			window.matrixBogoConditions = keys.map(function(k){ return grouped[k]; });
+		} else {
+			window.matrixBogoConditions = rawConds;
+		}
 		window.matrixBogoRewards    = Array.isArray(data.rewards)    ? data.rewards    : [];
 		window.matrixBogoRuleData   = (data.ruleData && typeof data.ruleData === 'object' && !Array.isArray(data.ruleData))
 			? data.ruleData : {};

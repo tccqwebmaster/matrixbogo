@@ -309,7 +309,29 @@ final class PromotionBuilder {
 			wp_send_json_error( [ 'message' => __( 'Failed to save promotion.', 'matrix-bogo' ) ] );
 		}
 
-		$this->conditions_repo->sync_for_rule( $new_id, $conditions );
+		// FIX: JS sends conditions as a 2D array [[cond,cond],[cond]] (groups of conditions).
+		// sync_for_rule expects a flat array of rows with group_id + sort_order.
+		$flat_conditions = [];
+		foreach ( $conditions as $group_idx => $group ) {
+			if ( ! is_array( $group ) ) {
+				continue;
+			}
+			foreach ( $group as $sort_idx => $cond ) {
+				if ( ! is_array( $cond ) ) {
+					continue;
+				}
+				$flat_conditions[] = [
+					'type'       => sanitize_key( $cond['type']     ?? 'cart_subtotal' ),
+					'operator'   => sanitize_text_field( $cond['operator'] ?? 'is' ),
+					'value'      => is_array( $cond['value'] ?? '' )
+						? wp_json_encode( $cond['value'] )
+						: sanitize_text_field( (string) ( $cond['value'] ?? '' ) ),
+					'group_id'   => (int) $group_idx,
+					'sort_order' => (int) $sort_idx,
+				];
+			}
+		}
+		$this->conditions_repo->sync_for_rule( $new_id, $flat_conditions );
 		$this->rewards_repo->sync_for_rule( $new_id, $rewards );
 		$this->rules->flush_cache();
 

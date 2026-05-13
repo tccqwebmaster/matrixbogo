@@ -27,17 +27,24 @@ final class TimeRangeCondition extends AbstractCondition {
 
 	public function evaluate( array $context = [] ): bool {
 		$current_time = (int) date( 'Hi', current_time( 'timestamp' ) ); // e.g. 1430 = 14:30
-		$value        = (array) $this->value;
 
-		$start = isset( $value['start'] ) ? (int) str_replace( ':', '', $value['start'] ) : 0;
-		$end   = isset( $value['end'] )   ? (int) str_replace( ':', '', $value['end'] )   : 2359;
+		/*
+		 * FIX: JS stores value as "09:00|17:00" (pipe-separated).
+		 * The old code expected an array with 'start'/'end' keys which was never populated,
+		 * so start defaulted to 0 (midnight) and end to 2359 — condition always passed.
+		 */
+		$raw   = (string) ( is_array( $this->value ) ? '' : $this->value );
+		$parts = explode( '|', $raw, 2 );
+		$start = ! empty( $parts[0] ) ? (int) str_replace( ':', '', trim( $parts[0] ) ) : 0;
+		$end   = ! empty( $parts[1] ) ? (int) str_replace( ':', '', trim( $parts[1] ) ) : 2359;
 
 		$in_range = $current_time >= $start && $current_time <= $end;
 
 		return match ( $this->operator ) {
-			'is'     => $in_range,
-			'is_not' => ! $in_range,
-			default  => $in_range,
+			'is'      => $in_range,
+			'is_not'  => ! $in_range,
+			'between' => $in_range,
+			default   => $in_range,
 		};
 	}
 }

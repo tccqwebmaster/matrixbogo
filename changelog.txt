@@ -1,5 +1,16 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-05-13 - version 1.2.0
+* Fixed (CRITICAL): Conditions were NEVER saved to the database — JS sends a 2D array [[group],[group]] but PromotionBuilder::ajax_save() passed it directly to sync_for_rule() which expects flat rows. Fixed by flattening the 2D array with group_id and sort_order before inserting.
+* Fixed (CRITICAL): Conditions were blank on edit — initBuilder() assigned flat DB rows directly to matrixBogoConditions (which expects a 2D grouped array). Fixed by regrouping flat rows by group_id in JS before rendering.
+* Fixed: is_true and is_false operators (used by Logged In, First Order, Repeat Customer conditions) were unhandled in AbstractCondition::compare() — fell to default false. All three conditions always evaluated to false.
+* Fixed: = operator (used by Cart Subtotal and Cart Quantity equality checks) was missing from compare() — fell to default false.
+* Fixed: Date Range condition value is stored as pipe-separated string (e.g. 2026-01-01|2026-12-31) but PHP expected an array with start/end keys. Result: start=0, end=PHP_INT_MAX — condition always passed regardless of dates.
+* Fixed: Time Range condition had same pipe-separated format mismatch. Result: condition always passed (start=0, end=2359).
+* Fixed: Day of Week condition stored abbreviated names (mon, tue, etc.) but PHP used intval() converting them all to 0 — never matched date(N) values 1–7. Condition always failed.
+* Fixed: Purchase History not_in operator was ignored — the old implementation always returned true if ANY product was purchased, regardless of whether operator was in or not_in.
+* Fixed: LoggedIn, FirstOrder, RepeatCustomer conditions updated to use the new is_true/is_false compare() operators directly rather than filter_var() on an empty value.
+
 2026-05-13 - version 1.1.1
 * Fixed: fixed_discount and percent_discount reward types never applied — root cause was apply_promotions() reading stale session rewards (get_session_rewards()) which are always one step behind because evaluate_cart() runs on woocommerce_after_calculate_totals AFTER fees are calculated. Fix: apply_promotions() now calls evaluate_cart() directly so rewards are always fresh at fee-calculation time.
 * Fixed: free_product and cheapest_free were unaffected because free_product is a physical cart item (zeroed by zero_gift_prices) and cheapest_free calculates its amount dynamically from live cart prices rather than from a stored discount_value.

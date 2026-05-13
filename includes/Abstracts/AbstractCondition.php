@@ -83,6 +83,11 @@ abstract class AbstractCondition {
 		return match ( $operator ) {
 			'is'           => $actual == $expected,  // phpcs:ignore WordPress.PHP.StrictComparisons
 			'is_not'       => $actual != $expected,  // phpcs:ignore WordPress.PHP.StrictComparisons
+			// '=' sent by JS for numeric equality (cart_subtotal, cart_quantity, etc.)
+			'='            => $actual == $expected,  // phpcs:ignore WordPress.PHP.StrictComparisons
+			// 'is_true'/'is_false' sent by JS for boolean conditions (logged_in, first_order, repeat_customer)
+			'is_true'      => (bool) $actual === true,
+			'is_false'     => (bool) $actual === false,
 			'>'            => $actual > $expected,
 			'>='           => $actual >= $expected,
 			'<'            => $actual < $expected,
