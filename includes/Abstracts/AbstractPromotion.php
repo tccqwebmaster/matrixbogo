@@ -66,9 +66,24 @@ abstract class AbstractPromotion {
 			};
 
 			$choice_pool_raw = $row['choice_pool'] ?? '[]';
-			$choice_pool     = is_array( $choice_pool_raw )
-				? $choice_pool_raw
-				: (array) json_decode( (string) $choice_pool_raw, true );
+			if ( is_array( $choice_pool_raw ) ) {
+				$choice_pool = $choice_pool_raw;
+			} else {
+				$decoded = json_decode( (string) $choice_pool_raw, true );
+				if ( is_array( $decoded ) ) {
+					$choice_pool = $decoded;
+				} else {
+					/*
+					 * FIX: Fallback for legacy rows stored as a comma-separated string
+					 * (e.g. "83332,83331,1204406") before the sync_for_rule fix was applied.
+					 * json_decode() returns null for that format; parse manually instead.
+					 */
+					$raw_str     = trim( (string) $choice_pool_raw );
+					$choice_pool = '' !== $raw_str
+						? array_values( array_filter( array_map( 'intval', explode( ',', $raw_str ) ) ) )
+						: [];
+				}
+			}
 
 			$out[] = [
 				'rule_id'         => $this->get_id(),

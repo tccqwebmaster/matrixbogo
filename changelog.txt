@@ -1,5 +1,11 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-05-13 - version 1.2.1
+* Fixed: Choice pool products never displayed in gift selector — JS sends choice_pool as comma-separated string (e.g. 83332,83331) but sync_for_rule only JSON-encoded it when already an array; string was stored raw in DB, then json_decode() failed returning null, cast to empty array → no products rendered → 'Select Your Free Gift' alert with nothing to pick.
+* Fixed: db_rewards_to_descriptors now has a fallback comma-string parser so existing DB rows saved before the fix also decode correctly.
+* Fixed: Gift section rendered multiple times on Porto theme (and other themes with cart widgets in sidebar/footer) because woocommerce_cart_collaterals fires in multiple locations. Added static render-once guard and is_cart()/is_checkout() page check.
+* Fixed: Gift section no longer renders when choice pool resolves to zero valid/in-stock products — previously the heading and Add Gift to Cart button showed with no radio options.
+
 2026-05-13 - version 1.2.0
 * Fixed (CRITICAL): Conditions were NEVER saved to the database — JS sends a 2D array [[group],[group]] but PromotionBuilder::ajax_save() passed it directly to sync_for_rule() which expects flat rows. Fixed by flattening the 2D array with group_id and sort_order before inserting.
 * Fixed (CRITICAL): Conditions were blank on edit — initBuilder() assigned flat DB rows directly to matrixBogoConditions (which expects a 2D grouped array). Fixed by regrouping flat rows by group_id in JS before rendering.

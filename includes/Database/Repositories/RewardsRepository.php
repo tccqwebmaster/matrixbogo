@@ -60,9 +60,28 @@ final class RewardsRepository extends AbstractRepository {
 
 		foreach ( $rewards as $reward ) {
 			$reward['rule_id'] = $rule_id;
-			if ( isset( $reward['choice_pool'] ) && is_array( $reward['choice_pool'] ) ) {
-				$reward['choice_pool'] = wp_json_encode( $reward['choice_pool'] );
+
+			/*
+			 * FIX: JS sends choice_pool as a comma-separated string of product IDs
+			 * (e.g. "83332,83331,1204406"). The old code only JSON-encoded if already
+			 * an array, so the raw string was stored in the DB.  Then db_rewards_to_descriptors()
+			 * called json_decode() on it, got null, cast to [], and the pool was always empty.
+			 * Now we normalise to a JSON-encoded integer array regardless of input format.
+			 */
+			if ( isset( $reward['choice_pool'] ) ) {
+				if ( is_array( $reward['choice_pool'] ) ) {
+					$reward['choice_pool'] = wp_json_encode(
+						array_values( array_filter( array_map( 'intval', $reward['choice_pool'] ) ) )
+					);
+				} elseif ( is_string( $reward['choice_pool'] ) && '' !== $reward['choice_pool'] ) {
+					// Comma-separated string from JS multi-select.
+					$ids = array_values( array_filter( array_map( 'intval', explode( ',', $reward['choice_pool'] ) ) ) );
+					$reward['choice_pool'] = wp_json_encode( $ids );
+				} else {
+					$reward['choice_pool'] = '[]';
+				}
 			}
+
 			$this->create( $reward );
 		}
 

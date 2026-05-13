@@ -90,12 +90,28 @@ final class CartPage {
 	 * Renders the gift product selection section on cart.
 	 */
 	public function render_gift_section(): void {
+		/*
+		 * FIX: Porto theme (and some page builders) render woocommerce_cart_collaterals
+		 * in multiple locations — mini-cart widget, cart page, footer — causing the
+		 * gift section to appear several times on one page load.  A static flag
+		 * ensures we only output HTML once per request.
+		 */
+		static $rendered = false;
+		if ( $rendered ) {
+			return;
+		}
+
+		// Only render on the actual cart or checkout page, not in sidebars/widgets.
+		if ( ! is_cart() && ! is_checkout() ) {
+			return;
+		}
+
 		$rewards_map = $this->engine->get_session_rewards();
 		$has_choice  = false;
 
 		foreach ( $rewards_map as $entry ) {
 			foreach ( $entry['rewards'] ?? [] as $reward ) {
-				if ( ! empty( $reward['customer_choice'] ) ) {
+				if ( ! empty( $reward['customer_choice'] ) && ! empty( $reward['choice_pool'] ) ) {
 					$has_choice = true;
 					break 2;
 				}
@@ -105,6 +121,8 @@ final class CartPage {
 		if ( ! $has_choice ) {
 			return;
 		}
+
+		$rendered = true;
 
 		wc_get_template(
 			'cart/gift-section.php',
