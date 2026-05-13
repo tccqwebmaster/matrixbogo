@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name:       Matrix BOGO WooCommerce Promotion
+ * Plugin Name:       Matrix BOGO Promotions
  * Plugin URI:        https://matrixplugins.com/matrix-bogo
- * Description:       Enterprise-grade WooCommerce BOGO & promotion engine with advanced rule builder, gift selector, analytics, and more.
+ * Description:       Create advanced Buy One Get One promotions, free gift campaigns, mix-and-match deals, and smart cart offers for WooCommerce.
  * Version:           1.2.1
  * Author:            Matrix Plugins
  * Author URI:        https://matrixplugins.com
