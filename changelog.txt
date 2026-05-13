@@ -1,5 +1,16 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-05-13 - version 1.1.0
+* Fixed: MATRIX_BOGO_VERSION constant was still '1.0.8' while plugin header said 1.0.9 — asset cache-busting was broken
+* Fixed: WC tested up to updated to 10.7.0 (was 10.0) — resolves WooCommerce compatibility check warning
+* Fixed: Dashboard stat cards (Active Promotions, Scheduled, Revenue, Redemptions) are now clickable links
+* Fixed: Active Promotions and Scheduled cards link to filtered promotions list; Revenue and Redemptions link to Analytics
+* Fixed: Top Promotions table rows now link to the promotion edit page
+* Fixed: Gift popup JS called AJAX action 'matrix_bogo_get_gifts' but PHP registered 'matrix_bogo_search_gifts' — products never loaded
+* Fixed: Gift popup JS referenced p.image but get_gift_products() returns p.thumbnail — images were broken
+* Fixed: Cart gift section nonce used 'matrix_bogo_gift_nonce' but CartEngine::ajax_apply_gift() checks 'matrix_bogo_frontend' — Add Gift to Cart always failed
+* Security: Autoloader path-traversal guard upgraded from strpos('..') check to realpath() containment verification (blocks symlink tricks and encoded sequences)
+
 2026-05-12 - version 1.0.9
 * Fixed: wpdb::prepare() called without a placeholder in RulesRepository::get_active_rules() — caused non-fatal notice on every page load
 * Fixed: Unescaped output in PromotionsList.php — trigger product names and category names now wrapped in esc_html() at echo point

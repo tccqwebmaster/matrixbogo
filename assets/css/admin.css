@@ -972,3 +972,18 @@
 	font-style: italic;
 	margin: 0;
 }
+
+/* ── Clickable stat cards ──────────────────────────────────────────── */
+.matrix-bogo-stat-link {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+	cursor: pointer;
+}
+.matrix-bogo-stat-link:hover,
+.matrix-bogo-stat-link:focus {
+	color: inherit;
+	outline: 2px solid var(--mb-primary);
+	outline-offset: 2px;
+}
+/* Preserve existing hover transform/shadow from .matrix-bogo-stat-card:hover */

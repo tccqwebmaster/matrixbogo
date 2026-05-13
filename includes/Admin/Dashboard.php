@@ -45,14 +45,18 @@ final class Dashboard {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'matrix-bogo' ) );
 		}
 
-		$active_count   = $this->rules_repo->count( [ 'status' => 'active' ] );
-		$inactive_count = $this->rules_repo->count( [ 'status' => 'inactive' ] );
+		$active_count    = $this->rules_repo->count( [ 'status' => 'active' ] );
 		$scheduled_count = $this->rules_repo->count( [ 'status' => 'scheduled' ] );
 
-		$today    = date( 'Y-m-d' );
-		$from_7d  = date( 'Y-m-d', strtotime( '-7 days' ) );
-		$totals   = $this->analytics_repo->get_totals( $from_7d, $today );
+		$today     = date( 'Y-m-d' );
+		$from_7d   = date( 'Y-m-d', strtotime( '-7 days' ) );
+		$totals    = $this->analytics_repo->get_totals( $from_7d, $today );
 		$top_rules = $this->analytics_repo->get_top_rules( $from_7d, $today, 5 );
+
+		// URLs for clickable stat cards.
+		$url_active    = admin_url( 'admin.php?page=matrix-bogo-promotions&status=active' );
+		$url_scheduled = admin_url( 'admin.php?page=matrix-bogo-promotions&status=scheduled' );
+		$url_analytics = admin_url( 'admin.php?page=matrix-bogo-analytics' );
 		?>
 		<div class="wrap matrix-bogo-admin">
 			<h1 class="wp-heading-inline">
@@ -64,28 +68,41 @@ final class Dashboard {
 			</a>
 			<hr class="wp-header-end">
 
-			<!-- Stats Cards -->
+			<!-- Stats Cards (each is a clickable link) -->
 			<div class="matrix-bogo-stats-grid">
-				<div class="matrix-bogo-stat-card matrix-bogo-stat-active">
+
+				<a href="<?php echo esc_url( $url_active ); ?>"
+				   class="matrix-bogo-stat-card matrix-bogo-stat-active matrix-bogo-stat-link"
+				   title="<?php esc_attr_e( 'View active promotions', 'matrix-bogo' ); ?>">
 					<span class="matrix-bogo-stat-number"><?php echo esc_html( $active_count ); ?></span>
 					<span class="matrix-bogo-stat-label"><?php esc_html_e( 'Active Promotions', 'matrix-bogo' ); ?></span>
-				</div>
-				<div class="matrix-bogo-stat-card matrix-bogo-stat-scheduled">
+				</a>
+
+				<a href="<?php echo esc_url( $url_scheduled ); ?>"
+				   class="matrix-bogo-stat-card matrix-bogo-stat-scheduled matrix-bogo-stat-link"
+				   title="<?php esc_attr_e( 'View scheduled promotions', 'matrix-bogo' ); ?>">
 					<span class="matrix-bogo-stat-number"><?php echo esc_html( $scheduled_count ); ?></span>
 					<span class="matrix-bogo-stat-label"><?php esc_html_e( 'Scheduled', 'matrix-bogo' ); ?></span>
-				</div>
-				<div class="matrix-bogo-stat-card matrix-bogo-stat-revenue">
+				</a>
+
+				<a href="<?php echo esc_url( $url_analytics ); ?>"
+				   class="matrix-bogo-stat-card matrix-bogo-stat-revenue matrix-bogo-stat-link"
+				   title="<?php esc_attr_e( 'View analytics', 'matrix-bogo' ); ?>">
 					<span class="matrix-bogo-stat-number">
 						<?php echo wp_kses_post( wc_price( (float) ( $totals['total_revenue'] ?? 0 ) ) ); ?>
 					</span>
 					<span class="matrix-bogo-stat-label"><?php esc_html_e( 'Revenue (7d)', 'matrix-bogo' ); ?></span>
-				</div>
-				<div class="matrix-bogo-stat-card matrix-bogo-stat-redemptions">
+				</a>
+
+				<a href="<?php echo esc_url( $url_analytics ); ?>"
+				   class="matrix-bogo-stat-card matrix-bogo-stat-redemptions matrix-bogo-stat-link"
+				   title="<?php esc_attr_e( 'View analytics', 'matrix-bogo' ); ?>">
 					<span class="matrix-bogo-stat-number">
 						<?php echo esc_html( number_format_i18n( (int) ( $totals['total_redemptions'] ?? 0 ) ) ); ?>
 					</span>
 					<span class="matrix-bogo-stat-label"><?php esc_html_e( 'Redemptions (7d)', 'matrix-bogo' ); ?></span>
-				</div>
+				</a>
+
 			</div>
 
 			<!-- Top Performing Promotions -->
@@ -109,9 +126,16 @@ final class Dashboard {
 							if ( ! $rule ) {
 								continue;
 							}
+							$edit_url = admin_url(
+								'admin.php?page=matrix-bogo-promotions&action=edit&id=' . absint( $stat['rule_id'] )
+							);
 							?>
 							<tr>
-								<td><?php echo esc_html( $rule['name'] ); ?></td>
+								<td>
+									<a href="<?php echo esc_url( $edit_url ); ?>">
+										<?php echo esc_html( $rule['name'] ); ?>
+									</a>
+								</td>
 								<td><?php echo esc_html( number_format_i18n( (int) $stat['redemptions'] ) ); ?></td>
 								<td><?php echo wp_kses_post( wc_price( (float) $stat['revenue'] ) ); ?></td>
 								<td><?php echo wp_kses_post( wc_price( (float) $stat['discount_total'] ) ); ?></td>

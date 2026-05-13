@@ -18,6 +18,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Registers a PSR-4-compliant autoloader that maps the `MatrixBogo\\`
  * namespace to the `includes/` directory of the plugin.
+ *
+ * Security: the resolved file path is verified to sit inside the plugin's
+ * own `includes/` directory before it is included, preventing any
+ * path-traversal / file-inclusion attack (CWE-98).
  */
 final class Autoloader {
 
@@ -31,7 +35,7 @@ final class Autoloader {
 	 * Registers the autoloader with the SPL autoload stack.
 	 */
 	public static function register(): void {
-		self::$base_dir = MATRIX_BOGO_PLUGIN_DIR . 'includes' . DIRECTORY_SEPARATOR;
+		self::$base_dir = realpath( MATRIX_BOGO_PLUGIN_DIR . 'includes' ) . DIRECTORY_SEPARATOR;
 		spl_autoload_register( [ static::class, 'load' ], true, true );
 	}
 
@@ -46,18 +50,28 @@ final class Autoloader {
 			return;
 		}
 
-		// Strip the base namespace and convert to a file path.
+		// Strip the base namespace and convert namespace separators to directory separators.
 		$relative = substr( $class, strlen( self::BASE_NAMESPACE ) );
 
-		// Guard against path traversal attempts.
-		if ( false !== strpos( $relative, '..' ) ) {
+		/*
+		 * Security: allow only word characters and namespace separators.
+		 * Blocks null bytes, dots, slashes before path-building even starts.
+		 */
+		if ( ! preg_match( '/^[a-zA-Z0-9_\\\\]+$/', $relative ) ) {
 			return;
 		}
 
-		$file      = self::$base_dir . str_replace( '\\', DIRECTORY_SEPARATOR, $relative ) . '.php';
+		$file = self::$base_dir . str_replace( '\\', DIRECTORY_SEPARATOR, $relative ) . '.php';
 
-		if ( file_exists( $file ) ) {
-			require_once $file;
+		/*
+		 * Security: resolve the real path and confirm it sits inside $base_dir.
+		 * Eliminates path-traversal via symlinks or encoded sequences.
+		 */
+		$real = realpath( $file );
+		if ( false === $real || strncmp( $real, self::$base_dir, strlen( self::$base_dir ) ) !== 0 ) {
+			return;
 		}
+
+		require_once $real;
 	}
 }

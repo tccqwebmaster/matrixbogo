@@ -46,7 +46,7 @@
 		$products.html('<div class="matrix-bogo-popup-loading"><span class="spinner is-active"></span></div>');
 
 		$.post(matrixBogoFrontend.ajaxUrl, {
-			action: 'matrix_bogo_get_gifts',
+			action: 'matrix_bogo_search_gifts',
 			nonce,
 			rule_id: ruleId,
 		}).done(function (res) {
@@ -68,7 +68,7 @@
 					<label>
 						<input type="radio" name="matrix_bogo_popup_choice"
 						       value="${p.id}" data-quantity="1">
-						<img src="${p.image}" alt="${p.name}" width="80">
+						<img src="${p.thumbnail}" alt="${p.name}" width="80">
 						<span class="matrix-bogo-gift-name">${p.name}</span>
 						<span class="matrix-bogo-gift-free-label">${matrixBogoFrontend.i18n.free}</span>
 					</label>

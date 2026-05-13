@@ -50,7 +50,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				</div>
 				<button class="button matrix-bogo-add-gift-btn"
 				        data-rule-id="<?php echo esc_attr( $rule_id ); ?>"
-				        data-nonce="<?php echo esc_attr( wp_create_nonce( 'matrix_bogo_gift_nonce' ) ); ?>">
+				        data-nonce="<?php echo esc_attr( wp_create_nonce( 'matrix_bogo_frontend' ) ); ?>">
 					<?php esc_html_e( 'Add Gift to Cart', 'matrix-bogo' ); ?>
 				</button>
 			</div>
