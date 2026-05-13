@@ -90,9 +90,13 @@ final class CartModifier {
 	 * @param array<string,mixed> $reward
 	 */
 	private function apply_fixed_discount( \WC_Cart $cart, array $reward ): void {
-		$value   = (float) ( $reward['discount_value'] ?? 0 );
-		$rule_id = (int) ( $reward['rule_id'] ?? 0 );
-		$label   = sprintf(
+		$value = (float) ( $reward['discount_value'] ?? 0 );
+
+		if ( $value <= 0 ) {
+			return; // Nothing to discount.
+		}
+
+		$label = sprintf(
 			/* translators: %s: promotion name */
 			__( 'Promotion: %s', 'matrix-bogo' ),
 			sanitize_text_field( $reward['label'] ?? '' )
@@ -111,18 +115,36 @@ final class CartModifier {
 		$percent    = (float) ( $reward['discount_value'] ?? 0 );
 		$product_id = (int) ( $reward['product_id'] ?? 0 );
 
+		if ( $percent <= 0 ) {
+			return; // Nothing to discount.
+		}
+
 		if ( $product_id > 0 ) {
-			// Discount applies only to a specific product.
+			// Discount applies only to specific product (supports variations too).
 			$subtotal = 0.0;
 			foreach ( $cart->get_cart() as $item ) {
-				if ( (int) $item['product_id'] === $product_id && empty( $item['matrix_bogo_gift'] ) ) {
-					$subtotal += (float) wc_get_price_excluding_tax( $item['data'] ) * (int) $item['quantity'];
+				if ( empty( $item['matrix_bogo_gift'] ) ) {
+					$item_pid = (int) ( $item['variation_id'] ?: $item['product_id'] );
+					$parent_pid = (int) $item['product_id'];
+					if ( $item_pid === $product_id || $parent_pid === $product_id ) {
+						$subtotal += (float) wc_get_price_excluding_tax( $item['data'] ) * (int) $item['quantity'];
+					}
 				}
 			}
 			$discount = $subtotal * ( $percent / 100 );
 		} else {
-			// Discount applies to whole cart subtotal.
-			$discount = (float) $cart->get_subtotal() * ( $percent / 100 );
+			/*
+			 * Discount applies to the whole cart subtotal.
+			 * Use get_cart_contents_total() (excludes fees) rather than
+			 * get_subtotal() which may not include tax depending on settings.
+			 */
+			$subtotal = 0.0;
+			foreach ( $cart->get_cart() as $item ) {
+				if ( empty( $item['matrix_bogo_gift'] ) ) {
+					$subtotal += (float) wc_get_price_excluding_tax( $item['data'] ) * (int) $item['quantity'];
+				}
+			}
+			$discount = $subtotal * ( $percent / 100 );
 		}
 
 		if ( $discount <= 0 ) {

@@ -109,7 +109,26 @@ final class CartEngine {
 			return;
 		}
 
-		$rewards_map = $this->promotion_engine->get_session_rewards();
+		/*
+		 * FIX: Always evaluate fresh rather than reading from session.
+		 *
+		 * The old code called get_session_rewards() which returned whatever
+		 * was saved by the PREVIOUS evaluate_cart() run
+		 * (hooked to woocommerce_after_calculate_totals).  Because
+		 * woocommerce_cart_calculate_fees fires BEFORE
+		 * woocommerce_after_calculate_totals, fee-based rewards
+		 * (fixed_discount, percent_discount) were always one step behind —
+		 * absent on the first cart load and wrong after any cart change.
+		 *
+		 * free_product works regardless because the gift is a physical cart
+		 * item zeroed by zero_gift_prices().  cheapest_free works because it
+		 * reads the live cart price rather than a stored discount_value.
+		 *
+		 * Calling evaluate_cart() here (during cart_calculate_fees, AFTER
+		 * WC has already calculated line-item subtotals) gives us a fully
+		 * up-to-date rewards map before we add any fees.
+		 */
+		$rewards_map = $this->promotion_engine->evaluate_cart( $cart );
 
 		if ( empty( $rewards_map ) ) {
 			return;

@@ -1,5 +1,11 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-05-13 - version 1.1.1
+* Fixed: fixed_discount and percent_discount reward types never applied — root cause was apply_promotions() reading stale session rewards (get_session_rewards()) which are always one step behind because evaluate_cart() runs on woocommerce_after_calculate_totals AFTER fees are calculated. Fix: apply_promotions() now calls evaluate_cart() directly so rewards are always fresh at fee-calculation time.
+* Fixed: free_product and cheapest_free were unaffected because free_product is a physical cart item (zeroed by zero_gift_prices) and cheapest_free calculates its amount dynamically from live cart prices rather than from a stored discount_value.
+* Fixed: percent_discount now iterates cart items directly instead of using get_subtotal() which can be unreliable depending on WooCommerce tax settings; also now correctly matches variation IDs against product-specific discounts.
+* Fixed: apply_fixed_discount and apply_percent_discount now guard against zero discount_value returning early instead of adding a £0 fee.
+
 2026-05-13 - version 1.1.0
 * Fixed: MATRIX_BOGO_VERSION constant was still '1.0.8' while plugin header said 1.0.9 — asset cache-busting was broken
 * Fixed: WC tested up to updated to 10.7.0 (was 10.0) — resolves WooCommerce compatibility check warning
