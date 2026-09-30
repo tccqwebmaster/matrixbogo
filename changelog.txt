@@ -1,5 +1,13 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-09-30 - version 1.3.0
+* Added: Category Get Gift promotions can trigger on product tags (rule_data trigger_tag_ids; Trigger Tags picker + matrix_bogo_search_tags / matrix_bogo_get_tag_details AJAX). Match = ANY category OR ANY tag. Built for the TCC QR100 voucher promo.
+* Added: Optional per-promotion Arabic cart label (rule_data label_ar) used for the fixed-discount fee line when the WPML language is Arabic.
+* Added: "Show Countdown Timer" checkbox on Settings (countdown_timer_enabled had no UI).
+* Fixed: Saving Settings silently switched the countdown timer OFF (the key was missing from sanitize_settings()).
+* Fixed: Tag matching fatal-errored (called wc_get_product_tag_ids(), which does not exist in WooCommerce) — now wc_get_product_term_ids().
+* Fixed: WPML — RuleEngine now includes the default-language product's categories/tags, and CategoryGetGift adds each trigger term's translations, so Arabic cart lines match promotions set up with English terms.
+
 2026-05-13 - version 1.2.1
 * Fixed: Choice pool products never displayed in gift selector — JS sends choice_pool as comma-separated string (e.g. 83332,83331) but sync_for_rule only JSON-encoded it when already an array; string was stored raw in DB, then json_decode() failed returning null, cast to empty array → no products rendered → 'Select Your Free Gift' alert with nothing to pick.
 * Fixed: db_rewards_to_descriptors now has a fallback comma-string parser so existing DB rows saved before the fix also decode correctly.

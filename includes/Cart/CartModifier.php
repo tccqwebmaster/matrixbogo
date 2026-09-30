@@ -96,13 +96,34 @@ final class CartModifier {
 			return; // Nothing to discount.
 		}
 
-		$label = sprintf(
-			/* translators: %s: promotion name */
-			__( 'Promotion: %s', 'matrix-bogo' ),
-			sanitize_text_field( $reward['label'] ?? '' )
-		);
+		$label = $this->arabic_label( $reward );
+		if ( '' === $label ) {
+			$label = sprintf(
+				/* translators: %s: promotion name */
+				__( 'Promotion: %s', 'matrix-bogo' ),
+				sanitize_text_field( $reward['label'] ?? '' )
+			);
+		}
 
 		$cart->add_fee( $label, -$value, false );
+	}
+
+	/**
+	 * The promotion's optional Arabic cart label, when the shopper is on the
+	 * Arabic side of the store (WPML / locale); '' otherwise.
+	 *
+	 * @param array<string,mixed> $reward
+	 */
+	private function arabic_label( array $reward ): string {
+		$label_ar = sanitize_text_field( (string) ( $reward['label_ar'] ?? '' ) );
+		if ( '' === $label_ar ) {
+			return '';
+		}
+		$lang = (string) apply_filters( 'wpml_current_language', null );
+		if ( '' === $lang ) {
+			$lang = substr( determine_locale(), 0, 2 );
+		}
+		return 'ar' === $lang ? $label_ar : '';
 	}
 
 	/**

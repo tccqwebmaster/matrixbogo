@@ -65,13 +65,13 @@ final class RuleEngine {
 				$is_match = true;
 			}
 			if ( ! $is_match && ! empty( $category_ids ) ) {
-				$product_cats = wc_get_product_cat_ids( $pid );
+				$product_cats = self::term_ids( $pid, 'product_cat' );
 				if ( ! empty( array_intersect( $product_cats, $category_ids ) ) ) {
 					$is_match = true;
 				}
 			}
 			if ( ! $is_match && ! empty( $tag_ids ) ) {
-				$product_tags = wc_get_product_tag_ids( $pid );
+				$product_tags = self::term_ids( $pid, 'product_tag' );
 				if ( ! empty( array_intersect( $product_tags, $tag_ids ) ) ) {
 					$is_match = true;
 				}
@@ -94,6 +94,31 @@ final class RuleEngine {
 			'matching_qty'   => $matching_qty,
 			'eligible_count' => $eligible_count,
 		];
+	}
+
+	/**
+	 * Category / tag IDs of a product. Under WPML, the terms of its
+	 * default-language original are included too, so a cart line in another
+	 * language still matches a promotion set up with the original's terms
+	 * (translations are separate posts and may not carry the term).
+	 *
+	 * @param int    $pid      Product ID.
+	 * @param string $taxonomy 'product_cat' or 'product_tag'.
+	 * @return int[]
+	 */
+	private static function term_ids( int $pid, string $taxonomy ): array {
+		// wc_get_product_term_ids(): WooCommerce has no wc_get_product_tag_ids().
+		$ids = wc_get_product_term_ids( $pid, $taxonomy );
+
+		if ( has_filter( 'wpml_object_id' ) ) {
+			$default = (string) apply_filters( 'wpml_default_language', null );
+			$orig    = (int) apply_filters( 'wpml_object_id', $pid, 'product', false, $default );
+			if ( $orig > 0 && $orig !== $pid ) {
+				$ids = array_merge( $ids, wc_get_product_term_ids( $orig, $taxonomy ) );
+			}
+		}
+
+		return array_map( 'intval', $ids );
 	}
 
 	/**
@@ -122,13 +147,13 @@ final class RuleEngine {
 				$match = true;
 			}
 			if ( ! $match && ! empty( $category_ids ) ) {
-				$cats = wc_get_product_cat_ids( $pid );
+				$cats = self::term_ids( $pid, 'product_cat' );
 				if ( ! empty( array_intersect( $cats, $category_ids ) ) ) {
 					$match = true;
 				}
 			}
 			if ( ! $match && ! empty( $tag_ids ) ) {
-				$tags = wc_get_product_tag_ids( $pid );
+				$tags = self::term_ids( $pid, 'product_tag' );
 				if ( ! empty( array_intersect( $tags, $tag_ids ) ) ) {
 					$match = true;
 				}

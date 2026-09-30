@@ -19,11 +19,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class AjaxSearch
  *
- * Provides four nopriv-free AJAX actions:
+ * Provides six nopriv-free AJAX actions:
  *  - matrix_bogo_search_products      : search by name / SKU / ID
  *  - matrix_bogo_search_categories    : search by name / ID
+ *  - matrix_bogo_search_tags          : search product tags by name / ID
  *  - matrix_bogo_get_product_details  : resolve saved product IDs to labels
  *  - matrix_bogo_get_category_details : resolve saved category IDs to labels
+ *  - matrix_bogo_get_tag_details      : resolve saved tag IDs to labels
  */
 final class AjaxSearch {
 
@@ -32,6 +34,8 @@ final class AjaxSearch {
 		$loader->add_action( 'wp_ajax_matrix_bogo_search_categories',    [ $this, 'search_categories' ] );
 		$loader->add_action( 'wp_ajax_matrix_bogo_get_product_details',  [ $this, 'get_product_details' ] );
 		$loader->add_action( 'wp_ajax_matrix_bogo_get_category_details', [ $this, 'get_category_details' ] );
+		$loader->add_action( 'wp_ajax_matrix_bogo_search_tags',          [ $this, 'search_tags' ] );
+		$loader->add_action( 'wp_ajax_matrix_bogo_get_tag_details',      [ $this, 'get_tag_details' ] );
 	}
 
 	// -----------------------------------------------------------------
@@ -141,10 +145,35 @@ final class AjaxSearch {
 	}
 
 	// -----------------------------------------------------------------
-	// Category search
+	// Category / tag search (shared taxonomy helpers)
 	// -----------------------------------------------------------------
 
 	public function search_categories(): void {
+		$this->search_terms( 'product_cat' );
+	}
+
+	public function search_tags(): void {
+		$this->search_terms( 'product_tag' );
+	}
+
+	/**
+	 * Resolve a comma-separated list of category IDs into labelled options.
+	 */
+	public function get_category_details(): void {
+		$this->get_term_details( 'product_cat' );
+	}
+
+	/**
+	 * Resolve a comma-separated list of tag IDs into labelled options.
+	 */
+	public function get_tag_details(): void {
+		$this->get_term_details( 'product_tag' );
+	}
+
+	/**
+	 * Search a product taxonomy by numeric ID or name; sends Select2 JSON.
+	 */
+	private function search_terms( string $taxonomy ): void {
 		check_ajax_referer( 'matrix_bogo_admin', 'nonce' );
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
@@ -157,9 +186,9 @@ final class AjaxSearch {
 
 		// 1. Direct numeric ID lookup.
 		if ( is_numeric( $q ) && (int) $q > 0 ) {
-			$term = get_term( absint( $q ), 'product_cat' );
+			$term = get_term( absint( $q ), $taxonomy );
 			if ( $term && ! is_wp_error( $term ) ) {
-				$results[]                  = $this->format_category( $term );
+				$results[]                  = $this->format_term( $term );
 				$seen[ $term->term_id ]     = true;
 			}
 		}
@@ -167,7 +196,7 @@ final class AjaxSearch {
 		// 2. Search by name.
 		$terms = get_terms(
 			[
-				'taxonomy'   => 'product_cat',
+				'taxonomy'   => $taxonomy,
 				'search'     => $q,
 				'number'     => 20,
 				'hide_empty' => false,
@@ -176,7 +205,7 @@ final class AjaxSearch {
 		if ( ! is_wp_error( $terms ) ) {
 			foreach ( $terms as $term ) {
 				if ( ! isset( $seen[ $term->term_id ] ) ) {
-					$results[]                  = $this->format_category( $term );
+					$results[]                  = $this->format_term( $term );
 					$seen[ $term->term_id ]     = true;
 				}
 			}
@@ -186,9 +215,9 @@ final class AjaxSearch {
 	}
 
 	/**
-	 * Resolve a comma-separated list of category IDs into labelled options.
+	 * Resolve posted comma-separated term IDs of a taxonomy into labels.
 	 */
-	public function get_category_details(): void {
+	private function get_term_details( string $taxonomy ): void {
 		check_ajax_referer( 'matrix_bogo_admin', 'nonce' );
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
@@ -200,9 +229,9 @@ final class AjaxSearch {
 
 		$results = [];
 		foreach ( $ids as $id ) {
-			$term = get_term( $id, 'product_cat' );
+			$term = get_term( $id, $taxonomy );
 			if ( $term && ! is_wp_error( $term ) ) {
-				$results[] = $this->format_category( $term );
+				$results[] = $this->format_term( $term );
 			}
 		}
 
@@ -210,9 +239,9 @@ final class AjaxSearch {
 	}
 
 	/**
-	 * Format a WP_Term (product_cat) into a Select2 {id, text} pair.
+	 * Format a WP_Term (product_cat / product_tag) into a Select2 {id, text} pair.
 	 */
-	private function format_category( \WP_Term $term ): array {
+	private function format_term( \WP_Term $term ): array {
 		return [
 			'id'   => $term->term_id,
 			'text' => $term->name . ' #' . $term->term_id,

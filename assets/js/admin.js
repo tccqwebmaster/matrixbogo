@@ -209,7 +209,9 @@
 		spend_amount_get_gift:  [{ key: 'min_amount',           label: 'Minimum Spend',       type: 'number',         placeholder: '0.00' }],
 		cart_quantity_get_gift: [{ key: 'min_quantity',         label: 'Minimum Cart Qty',    type: 'number',         placeholder: '1' }],
 		category_get_gift:      [{ key: 'trigger_category_ids', label: 'Trigger Categories', type: 'category_multi', placeholder: 'Search by category name or ID' },
-		                         { key: 'trigger_quantity',     label: 'Trigger Quantity',    type: 'number',         placeholder: '1' }],
+		                         { key: 'trigger_tag_ids',      label: 'Trigger Tags',       type: 'tag_multi',      placeholder: 'Search by tag name or ID. A product matches if it is in ANY chosen category OR has ANY chosen tag.' },
+		                         { key: 'trigger_quantity',     label: 'Trigger Quantity',    type: 'number',         placeholder: '1' },
+		                         { key: 'label_ar',             label: 'Arabic cart label (optional)', type: 'text', placeholder: 'Shown instead of the promotion name on the Arabic cart/checkout' }],
 	};
 
 	function esc(str) {
@@ -248,9 +250,9 @@
 			});
 	}
 
-	function prePopulateCategories($el, ids) {
+	function prePopulateCategories($el, ids, action) {
 		if (!ids) { return; }
-		$.post(matrixBogoAdmin.ajaxUrl, { action: 'matrix_bogo_get_category_details', nonce: matrixBogoAdmin.nonce, ids: ids })
+		$.post(matrixBogoAdmin.ajaxUrl, { action: action || 'matrix_bogo_get_category_details', nonce: matrixBogoAdmin.nonce, ids: ids })
 			.done(function (res) {
 				if (!res.success) { return; }
 				res.data.results.forEach(function (item) {
@@ -294,6 +296,14 @@
 			$el.select2({ width: '100%', placeholder: 'Search by category name or ID…', allowClear: true, minimumInputLength: 3, ajax: s2AjaxCfg('matrix_bogo_search_categories') });
 			prePopulateCategories($el, String($el.data('saved-ids') || '').trim());
 		});
+
+		// Multi-tag search.
+		$ctx.find('.matrix-bogo-tag-select2').each(function () {
+			const $el = $(this);
+			if ($el.hasClass('select2-hidden-accessible')) { return; }
+			$el.select2({ width: '100%', placeholder: 'Search by tag name or ID…', allowClear: true, minimumInputLength: 2, ajax: s2AjaxCfg('matrix_bogo_search_tags') });
+			prePopulateCategories($el, String($el.data('saved-ids') || '').trim(), 'matrix_bogo_get_tag_details');
+		});
 	}
 
 	// ── Rule Data Section ─────────────────────────────────────────────
@@ -315,8 +325,8 @@
 				html += '<select multiple class="matrix-bogo-product-select2 matrix-bogo-rule-data-field"'
 					+ ' data-key="' + esc(field.key) + '" data-saved-ids="' + esc(String(val)) + '" style="min-width:380px"></select>'
 					+ '<p class="description">' + esc(field.placeholder) + '</p>';
-			} else if (field.type === 'category_multi') {
-				html += '<select multiple class="matrix-bogo-category-select2 matrix-bogo-rule-data-field"'
+			} else if (field.type === 'category_multi' || field.type === 'tag_multi') {
+				html += '<select multiple class="' + (field.type === 'tag_multi' ? 'matrix-bogo-tag-select2' : 'matrix-bogo-category-select2') + ' matrix-bogo-rule-data-field"'
 					+ ' data-key="' + esc(field.key) + '" data-saved-ids="' + esc(String(val)) + '" style="min-width:380px"></select>'
 					+ '<p class="description">' + esc(field.placeholder) + '</p>';
 			} else {

@@ -96,6 +96,7 @@ abstract class AbstractPromotion {
 				'customer_choice' => (bool) ( $row['customer_choice'] ?? false ),
 				'choice_pool'     => array_map( 'intval', $choice_pool ),
 				'label'           => $this->get_name(),
+				'label_ar'        => (string) $this->get_data( 'label_ar', '' ),
 			];
 		}
 		return $out;
