@@ -6,7 +6,7 @@ Tested up to: 6.9
 Requires PHP: 8.1
 WC requires at least: 8.0
 WC tested up to: 10.7.0
-Stable tag: 1.2.1
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,12 @@ Yes. A full CRUD REST API is available at `matrix-bogo/v1`. Endpoints cover prom
 
 == Changelog ==
 
+= 1.3.0 =
+* Added: "Category Get Gift" promotions can also trigger on product tags (new Trigger Tags picker). A product qualifies if it is in ANY chosen category OR has ANY chosen tag
+* Added: Optional "Arabic cart label" per Category Get Gift promotion — shown instead of "Promotion: name" on the Arabic cart/checkout (WPML)
+* Fixed: Tag-based matching caused a fatal error (non-existent WooCommerce function)
+* Fixed: WPML — category/tag triggers now also match cart lines in the secondary language (terms of the default-language product and the terms' translations are included)
+
 = 1.2.1 =
 * Fixed: Choice pool products never displayed in gift selector — JS sends choice_pool as a comma-separated string but sync_for_rule() only JSON-encoded arrays; string was stored raw, json_decode() failed, pool was always empty
 * Fixed: Fallback comma-string parser in db_rewards_to_descriptors() for existing DB rows
@@ -206,6 +212,9 @@ Yes. A full CRUD REST API is available at `matrix-bogo/v1`. Endpoints cover prom
 * Initial release — 5 promotion types, 16 condition types, priority manager, analytics dashboard, REST API, HPOS compatibility, import/export, multilingual
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Adds product-tag triggers and an Arabic cart label to Category Get Gift promotions, and fixes category/tag matching on WPML secondary-language carts.
 
 = 1.2.1 =
 Fixes gift pool products not appearing in the gift selector, and the gift section duplicating itself on themes with multiple cart widget areas. Update recommended.

@@ -378,7 +378,9 @@ final class PromotionBuilder {
 			],
 			'category_get_gift'      => [
 				[ 'key' => 'trigger_category_ids', 'label' => __( 'Trigger Categories', 'matrix-bogo' ), 'type' => 'category_multi', 'placeholder' => __( 'Search by category name or ID', 'matrix-bogo' ) ],
+				[ 'key' => 'trigger_tag_ids',      'label' => __( 'Trigger Tags', 'matrix-bogo' ),       'type' => 'tag_multi',      'placeholder' => __( 'Search by tag name or ID. A product matches if it is in ANY chosen category OR has ANY chosen tag.', 'matrix-bogo' ) ],
 				[ 'key' => 'trigger_quantity',     'label' => __( 'Trigger Quantity', 'matrix-bogo' ),   'type' => 'number',          'placeholder' => '1' ],
+				[ 'key' => 'label_ar',             'label' => __( 'Arabic cart label (optional)', 'matrix-bogo' ), 'type' => 'text', 'placeholder' => __( 'Shown instead of the promotion name on the Arabic cart/checkout', 'matrix-bogo' ) ],
 			],
 		];
 		return $map[ $type ] ?? [];
@@ -401,12 +403,14 @@ final class PromotionBuilder {
 			$val = isset( $rule_data[ $field['key'] ] ) ? $rule_data[ $field['key'] ] : '';
 			echo '<tr><th>' . esc_html( $field['label'] ) . '</th><td>';
 
-			if ( 'product_multi' === $field['type'] || 'category_multi' === $field['type'] ) {
+			if ( in_array( $field['type'], [ 'product_multi', 'category_multi', 'tag_multi' ], true ) ) {
 				// Render a Select2-compatible <select multiple> pre-populated with saved values.
 				$saved_ids  = array_filter( array_map( 'absint', explode( ',', (string) $val ) ) );
-				$css_class  = 'product_multi' === $field['type']
-					? 'matrix-bogo-product-select2'
-					: 'matrix-bogo-category-select2';
+				$css_class  = [
+					'product_multi'  => 'matrix-bogo-product-select2',
+					'category_multi' => 'matrix-bogo-category-select2',
+					'tag_multi'      => 'matrix-bogo-tag-select2',
+				][ $field['type'] ];
 				echo '<select multiple'
 					. ' class="' . esc_attr( $css_class . ' matrix-bogo-rule-data-field' ) . '"'
 					. ' data-key="' . esc_attr( $field['key'] ) . '"'
@@ -423,8 +427,9 @@ final class PromotionBuilder {
 						}
 					}
 				} else {
+					$taxonomy = 'tag_multi' === $field['type'] ? 'product_tag' : 'product_cat';
 					foreach ( $saved_ids as $tid ) {
-						$term = get_term( $tid, 'product_cat' );
+						$term = get_term( $tid, $taxonomy );
 						if ( $term && ! is_wp_error( $term ) ) {
 							echo '<option value="' . esc_attr( (string) $tid ) . '" selected>'
 								. esc_html( $term->name . ' #' . $tid ) . '</option>';
