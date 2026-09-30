@@ -135,6 +135,8 @@ Yes. A full CRUD REST API is available at `matrix-bogo/v1`. Endpoints cover prom
 = 1.3.0 =
 * Added: "Category Get Gift" promotions can also trigger on product tags (new Trigger Tags picker). A product qualifies if it is in ANY chosen category OR has ANY chosen tag
 * Added: Optional "Arabic cart label" per Category Get Gift promotion — shown instead of "Promotion: name" on the Arabic cart/checkout (WPML)
+* Added: "Show Countdown Timer" on/off setting
+* Fixed: Saving Settings silently turned the countdown timer off
 * Fixed: Tag-based matching caused a fatal error (non-existent WooCommerce function)
 * Fixed: WPML — category/tag triggers now also match cart lines in the secondary language (terms of the default-language product and the terms' translations are included)
 

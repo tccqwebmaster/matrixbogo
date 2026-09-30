@@ -94,6 +94,14 @@ final class Settings {
 						</td>
 					</tr>
 					<tr>
+						<th><?php esc_html_e( 'Show Countdown Timer', 'matrix-bogo' ); ?></th>
+						<td>
+							<input type="checkbox" name="countdown_timer_enabled" value="1"
+							       <?php checked( ! empty( $s['countdown_timer_enabled'] ) ); ?>>
+							<p class="description"><?php esc_html_e( '"Offer ends in" timer on cart, checkout and shop pages for scheduled promotions. Turn off for long-running promotions.', 'matrix-bogo' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th><?php esc_html_e( 'Show Product Badges', 'matrix-bogo' ); ?></th>
 						<td>
 							<input type="checkbox" name="show_product_badges" value="1"
@@ -196,6 +204,7 @@ final class Settings {
 			'show_notices'            => ! empty( $input['show_notices'] ) ? 1 : 0,
 			'show_progress_bar'       => ! empty( $input['show_progress_bar'] ) ? 1 : 0,
 			'show_product_badges'     => ! empty( $input['show_product_badges'] ) ? 1 : 0,
+			'countdown_timer_enabled' => ! empty( $input['countdown_timer_enabled'] ) ? 1 : 0,
 			'gift_badge_text'         => sanitize_text_field( $input['gift_badge_text'] ?? '' ),
 			'free_price_label'        => sanitize_text_field( $input['free_price_label'] ?? '' ),
 			'enable_logging'          => ! empty( $input['enable_logging'] ) ? 1 : 0,
