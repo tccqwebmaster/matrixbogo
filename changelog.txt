@@ -1,5 +1,8 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-10-13 - version 1.4.1
+* Fixed: Homepage (EN+AR) 500 / critical error after 1.4.0 — WPML IDs were mapped via the 'wpml_active_languages' filter, which calls wp_reset_query() and wiped the global $product inside Porto's product-grid swatches ("get_meta() on null" in variable.php). Language codes now come from SitePress::get_active_languages() (cached per request) and the variation filter restores the loop globals.
+
 2026-10-13 - version 1.4.0
 * Added: Option-level (variation) eligibility for gift promotions. A cart line qualifies when (its product matches the categories/tags/products AND the option is not excluded) OR the option is explicitly included. Built for the QR100 voucher on iPads/iPhones where only some storage options get it.
 * Added: "Gift promotions for this option" checkboxes on every variation (Product data → Variations). Saved as variation meta _matrix_bogo_promo_ids (int[] of rule IDs); copied to translations via the new wpml-config.xml, and the cart also reads the default-language original's value.

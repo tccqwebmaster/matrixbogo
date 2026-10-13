@@ -65,6 +65,8 @@ final class ProductPage {
 		if ( ! is_array( $data ) || ! $product instanceof \WC_Product || ! $variation instanceof \WC_Product ) {
 			return $data;
 		}
+		// Never let promotion lookups disturb the loop's globals (Porto swatches read them).
+		$saved  = [ $GLOBALS['post'] ?? null, $GLOBALS['product'] ?? null ];
 		$promos = [];
 		foreach ( $this->option_rules_for( $product ) as $promotion ) {
 			if ( null !== RuleEngine::match_line( $promotion->get_trigger(), $product->get_id(), $variation->get_id() ) ) {
@@ -77,6 +79,7 @@ final class ProductPage {
 		if ( $this->option_rules_for( $product ) ) {
 			$data['matrix_bogo_promos'] = $promos;
 		}
+		[ $GLOBALS['post'], $GLOBALS['product'] ] = $saved;
 		return $data;
 	}
 
