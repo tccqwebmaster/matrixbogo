@@ -37,6 +37,7 @@ final class Admin {
 	private Logs             $logs;
 	private SetupWizard      $wizard;
 	private AjaxSearch       $ajax_search;
+	private VariationFields  $variation_fields;
 
 	public function __construct( PromotionEngine $engine, LicenseManager $license ) {
 		$this->engine           = $engine;
@@ -49,6 +50,7 @@ final class Admin {
 		$this->logs             = new Logs();
 		$this->wizard           = new SetupWizard();
 		$this->ajax_search      = new AjaxSearch();
+		$this->variation_fields = new VariationFields();
 	}
 
 	// -----------------------------------------------------------------
@@ -74,6 +76,7 @@ final class Admin {
 
 		// Product & category AJAX search (powers Select2 dropdowns).
 		$this->ajax_search->init( $loader );
+		$this->variation_fields->init( $loader );
 	}
 
 	// -----------------------------------------------------------------

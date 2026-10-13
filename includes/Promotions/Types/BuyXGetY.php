@@ -4,6 +4,8 @@
  *
  * rule_data (flat keys saved by builder):
  *   trigger_product_ids  – comma-separated product IDs
+ *   trigger_variation_ids – comma-separated variation IDs that always qualify
+ *   exclude_variation_ids – comma-separated variation IDs of trigger products left out
  *   trigger_quantity     – quantity of trigger products required per set
  *
  * Rewards come from the matrix_bogo_rewards table (injected via set_db_rewards).
@@ -34,31 +36,30 @@ final class BuyXGetY extends AbstractPromotion {
 
 	// -----------------------------------------------------------------
 
-	private function build_trigger(): array {
-		return [
-			'products' => $this->ids_from_data( 'trigger_product_ids' ),
-			'quantity' => max( 1, (int) $this->get_data( 'trigger_quantity', 1 ) ),
-		];
+	public function get_trigger(): array {
+		return array_merge(
+			[
+				'products' => $this->ids_from_data( 'trigger_product_ids' ),
+				'quantity' => max( 1, (int) $this->get_data( 'trigger_quantity', 1 ) ),
+			],
+			$this->option_trigger()
+		);
 	}
 
 	public function is_applicable( \WC_Cart $cart ): bool {
-		$trigger = $this->build_trigger();
-		// If no products configured yet, treat as not applicable.
-		if ( empty( $trigger['products'] ) ) {
-			return false;
-		}
-		$result = RuleEngine::evaluate_trigger( $cart, $trigger );
+		// No products/options configured → nothing matches: RuleEngine never
+		// falls back to "any product" when a rule_id is in the trigger.
+		$result = RuleEngine::evaluate_trigger( $cart, $this->get_trigger() );
 		return $result['eligible_count'] >= 1;
 	}
 
 	public function calculate_rewards( \WC_Cart $cart ): array {
-		$trigger = $this->build_trigger();
-		$result  = RuleEngine::evaluate_trigger( $cart, $trigger );
-		$times   = max( 0, $result['eligible_count'] );
+		$result = RuleEngine::evaluate_trigger( $cart, $this->get_trigger() );
+		$times  = max( 0, $result['eligible_count'] );
 		if ( $times <= 0 ) {
 			return [];
 		}
 
-		return $this->db_rewards_to_descriptors( $times );
+		return $this->db_rewards_to_descriptors( $times, $result['matched_items'] );
 	}
 }

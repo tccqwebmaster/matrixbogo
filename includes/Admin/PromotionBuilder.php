@@ -360,6 +360,8 @@ final class PromotionBuilder {
 		$map = [
 			'buy_x_get_y'            => [
 				[ 'key' => 'trigger_product_ids', 'label' => __( 'Trigger Products', 'matrix-bogo' ),    'type' => 'product_multi',  'placeholder' => __( 'Search by name, SKU, or ID', 'matrix-bogo' ) ],
+				[ 'key' => 'trigger_variation_ids', 'label' => __( 'Include options', 'matrix-bogo' ), 'type' => 'variation_multi', 'placeholder' => __( 'Product options (variations) that always qualify, even without a matching trigger product. Search by SKU or name.', 'matrix-bogo' ) ],
+				[ 'key' => 'exclude_variation_ids', 'label' => __( 'Exclude options', 'matrix-bogo' ), 'type' => 'variation_multi', 'placeholder' => __( 'Options left out although their product matches (e.g. the 128GB iPads of a tagged iPad). Search by SKU or name.', 'matrix-bogo' ) ],
 				[ 'key' => 'trigger_quantity',    'label' => __( 'Trigger Quantity', 'matrix-bogo' ),    'type' => 'number',         'placeholder' => '1' ],
 			],
 			'buy_x_get_x'            => [
@@ -379,6 +381,8 @@ final class PromotionBuilder {
 			'category_get_gift'      => [
 				[ 'key' => 'trigger_category_ids', 'label' => __( 'Trigger Categories', 'matrix-bogo' ), 'type' => 'category_multi', 'placeholder' => __( 'Search by category name or ID', 'matrix-bogo' ) ],
 				[ 'key' => 'trigger_tag_ids',      'label' => __( 'Trigger Tags', 'matrix-bogo' ),       'type' => 'tag_multi',      'placeholder' => __( 'Search by tag name or ID. A product matches if it is in ANY chosen category OR has ANY chosen tag.', 'matrix-bogo' ) ],
+				[ 'key' => 'trigger_variation_ids', 'label' => __( 'Include options', 'matrix-bogo' ), 'type' => 'variation_multi', 'placeholder' => __( 'Product options (variations) that always qualify, even without a matching tag or category. Search by SKU or name.', 'matrix-bogo' ) ],
+				[ 'key' => 'exclude_variation_ids', 'label' => __( 'Exclude options', 'matrix-bogo' ), 'type' => 'variation_multi', 'placeholder' => __( 'Options left out although their product matches (e.g. the 128GB iPads of a tagged iPad). Search by SKU or name.', 'matrix-bogo' ) ],
 				[ 'key' => 'trigger_quantity',     'label' => __( 'Trigger Quantity', 'matrix-bogo' ),   'type' => 'number',          'placeholder' => '1' ],
 				[ 'key' => 'label_ar',             'label' => __( 'Arabic cart label (optional)', 'matrix-bogo' ), 'type' => 'text', 'placeholder' => __( 'Shown instead of the promotion name on the Arabic cart/checkout', 'matrix-bogo' ) ],
 			],
@@ -403,11 +407,12 @@ final class PromotionBuilder {
 			$val = isset( $rule_data[ $field['key'] ] ) ? $rule_data[ $field['key'] ] : '';
 			echo '<tr><th>' . esc_html( $field['label'] ) . '</th><td>';
 
-			if ( in_array( $field['type'], [ 'product_multi', 'category_multi', 'tag_multi' ], true ) ) {
+			if ( in_array( $field['type'], [ 'product_multi', 'variation_multi', 'category_multi', 'tag_multi' ], true ) ) {
 				// Render a Select2-compatible <select multiple> pre-populated with saved values.
 				$saved_ids  = array_filter( array_map( 'absint', explode( ',', (string) $val ) ) );
 				$css_class  = [
-					'product_multi'  => 'matrix-bogo-product-select2',
+					'product_multi'   => 'matrix-bogo-product-select2',
+					'variation_multi' => 'matrix-bogo-variation-select2',
 					'category_multi' => 'matrix-bogo-category-select2',
 					'tag_multi'      => 'matrix-bogo-tag-select2',
 				][ $field['type'] ];
@@ -416,7 +421,7 @@ final class PromotionBuilder {
 					. ' data-key="' . esc_attr( $field['key'] ) . '"'
 					. ' style="min-width:380px">';
 
-				if ( 'product_multi' === $field['type'] ) {
+				if ( in_array( $field['type'], [ 'product_multi', 'variation_multi' ], true ) ) {
 					foreach ( $saved_ids as $pid ) {
 						$product = wc_get_product( $pid );
 						if ( $product ) {

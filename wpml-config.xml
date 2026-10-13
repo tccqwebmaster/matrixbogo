@@ -1,0 +1,6 @@
+<wpml-config>
+	<custom-fields>
+		<!-- Matrix BOGO: promotions a product option (variation) is included in — same on every language. -->
+		<custom-field action="copy">_matrix_bogo_promo_ids</custom-field>
+	</custom-fields>
+</wpml-config>

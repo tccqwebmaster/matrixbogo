@@ -56,4 +56,34 @@
 		$(this).closest('label').css({ borderColor: '#2271b1', background: '#eef5fb' });
 	});
 
+	// ── Option-level promotions (variable products) ──────────────────
+	// The variation JSON carries matrix_bogo_promos (eligible promotion
+	// labels) only on products with option rules. Show them for an eligible
+	// option, hide otherwise. Other code can listen to the
+	// 'matrix_bogo_option_promos' event (promos array, empty = not eligible).
+
+	function setOptionPromos($form, promos) {
+		const $box = $form.find('.matrix-bogo-variation-promos');
+		const list = Array.isArray(promos) ? promos : [];
+		$box.empty();
+		list.forEach(function (p) {
+			$('<div class="matrix-bogo-product-promo-badge"><span class="matrix-bogo-promo-icon">🎁</span><span class="matrix-bogo-promo-name"></span></div>')
+				.find('.matrix-bogo-promo-name').text(p.label).end()
+				.appendTo($box);
+		});
+		$box.prop('hidden', !list.length);
+		$form.toggleClass('matrix-bogo-option-eligible', list.length > 0);
+		$form.trigger('matrix_bogo_option_promos', [list]);
+	}
+
+	$(document).on('found_variation', '.variations_form', function (e, variation) {
+		if (variation && 'matrix_bogo_promos' in variation) {
+			setOptionPromos($(this), variation.matrix_bogo_promos);
+		}
+	});
+
+	$(document).on('reset_data hide_variation', '.variations_form', function () {
+		setOptionPromos($(this), []);
+	});
+
 })(jQuery);
