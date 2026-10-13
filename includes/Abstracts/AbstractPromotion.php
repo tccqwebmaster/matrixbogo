@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace MatrixBogo\Abstracts;
 
+use MatrixBogo\Promotions\VariationEligibility;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -50,10 +52,11 @@ abstract class AbstractPromotion {
 	 *
 	 * Maps reward_type → discount_type and normalises all fields.
 	 *
-	 * @param int $qty_multiplier Multiply the stored quantity by this (e.g. eligible sets).
+	 * @param int   $qty_multiplier Multiply the stored quantity by this (e.g. eligible sets).
+	 * @param array $trigger_items  Cart lines (product/variation/qty) that triggered the reward — kept for reporting.
 	 * @return array<int, array<string,mixed>>
 	 */
-	protected function db_rewards_to_descriptors( int $qty_multiplier = 1 ): array {
+	protected function db_rewards_to_descriptors( int $qty_multiplier = 1, array $trigger_items = [] ): array {
 		$out = [];
 		foreach ( $this->db_rewards as $row ) {
 			$reward_type = (string) ( $row['reward_type'] ?? 'free_product' );
@@ -97,6 +100,7 @@ abstract class AbstractPromotion {
 				'choice_pool'     => array_map( 'intval', $choice_pool ),
 				'label'           => $this->get_name(),
 				'label_ar'        => (string) $this->get_data( 'label_ar', '' ),
+				'trigger_items'   => $trigger_items,
 			];
 		}
 		return $out;
@@ -114,6 +118,30 @@ abstract class AbstractPromotion {
 			return [];
 		}
 		return array_values( array_filter( array_map( 'intval', explode( ',', $raw ) ) ) );
+	}
+
+	/**
+	 * The "buy" trigger definition for RuleEngine, or [] when the type does
+	 * not select products (spend / cart-quantity / tiered).
+	 *
+	 * @return array<string,mixed>
+	 */
+	public function get_trigger(): array {
+		return [];
+	}
+
+	/**
+	 * Included / excluded option (variation) IDs from rule_data, mapped to
+	 * every WPML language so an Arabic cart behaves exactly like an English one.
+	 *
+	 * @return array{variations:int[], exclude_variations:int[], rule_id:int}
+	 */
+	protected function option_trigger(): array {
+		return [
+			'variations'         => VariationEligibility::with_translations( $this->ids_from_data( 'trigger_variation_ids' ), 'product_variation' ),
+			'exclude_variations' => VariationEligibility::with_translations( $this->ids_from_data( 'exclude_variation_ids' ), 'product_variation' ),
+			'rule_id'            => $this->get_id(),
+		];
 	}
 
 	// -----------------------------------------------------------------

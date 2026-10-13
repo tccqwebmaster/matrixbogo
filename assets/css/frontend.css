@@ -190,3 +190,7 @@ body.matrix-bogo-popup-open{overflow:hidden;touch-action:none}
 	.matrix-bogo-popup-content,.mb-countdown-banner{animation:none!important}
 	.matrix-bogo-gift-item label:hover,.matrix-bogo-popup-products .matrix-bogo-gift-item label:hover,#matrix-bogo-popup-add-btn:hover:not(:disabled){transform:none!important}
 }
+
+/* Option-level promotion notice (variable products) */
+.matrix-bogo-variation-promos[hidden]{display:none!important}
+.matrix-bogo-variation-promos{margin:10px 0}

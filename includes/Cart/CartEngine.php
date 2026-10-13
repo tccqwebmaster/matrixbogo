@@ -287,12 +287,16 @@ final class CartEngine {
 		$rewards_map = (array) ( WC()->session ? WC()->session->get( 'matrix_bogo_rewards' ) : [] );
 
 		foreach ( $rewards_map as $rule_id => $entry ) {
-			$discount   = 0.0;
-			$gifts_data = [];
+			$discount      = 0.0;
+			$gifts_data    = [];
+			$trigger_items = [];
 
+			// Each reward carries trigger_items (the product / option lines
+			// that earned it), so redemptions record which variation triggered.
 			foreach ( $entry['rewards'] ?? [] as $reward ) {
-				$discount    += (float) ( $reward['total_discount'] ?? 0 );
-				$gifts_data[] = $reward;
+				$discount     += (float) ( $reward['total_discount'] ?? 0 );
+				$gifts_data[]  = $reward;
+				$trigger_items = $trigger_items ?: (array) ( $reward['trigger_items'] ?? [] );
 			}
 
 			$this->redemptions->record(
@@ -304,6 +308,27 @@ final class CartEngine {
 			);
 
 			$this->rules_repo->increment_uses( (int) $rule_id );
+
+			Logger::info(
+				'matrix_bogo_redeemed',
+				sprintf(
+					'Promotion #%d redeemed on order #%d, triggered by: %s',
+					(int) $rule_id,
+					(int) $order->get_id(),
+					implode( ', ', array_map( static function ( array $line ): string {
+						return sprintf(
+							'%d%s x%d (%s)',
+							(int) ( $line['product_id'] ?? 0 ),
+							! empty( $line['variation_id'] ) ? '/' . (int) $line['variation_id'] : '',
+							(int) ( $line['quantity'] ?? 0 ),
+							(string) ( $line['via'] ?? '' )
+						);
+					}, $trigger_items ) )
+				),
+				[ 'trigger_items' => $trigger_items ],
+				(int) $rule_id,
+				(int) $order->get_id()
+			);
 
 			do_action( 'matrix_bogo_after_redemption_recorded', (int) $rule_id, $order );
 		}

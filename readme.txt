@@ -6,7 +6,7 @@ Tested up to: 6.9
 Requires PHP: 8.1
 WC requires at least: 8.0
 WC tested up to: 10.7.0
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,13 @@ Yes. A full CRUD REST API is available at `matrix-bogo/v1`. Endpoints cover prom
 
 == Changelog ==
 
+= 1.4.0 =
+* Added: Gift promotions can target individual product options (variations) — tick "Gift promotions for this option" on a variation, or use the new "Include options" / "Exclude options" pickers on Category Get Gift and Buy X Get Y
+* Added: Rule — an option qualifies if its product matches the categories/tags AND the option is not excluded, OR the option is explicitly included
+* Added: WPML — included/excluded options and the per-variation setting apply to every language (wpml-config.xml copies the variation meta)
+* Added: Product page notice follows the selected option on variable products that use option rules
+* Added: Redemptions and logs record which product option triggered the reward
+
 = 1.3.0 =
 * Added: "Category Get Gift" promotions can also trigger on product tags (new Trigger Tags picker). A product qualifies if it is in ANY chosen category OR has ANY chosen tag
 * Added: Optional "Arabic cart label" per Category Get Gift promotion — shown instead of "Promotion: name" on the Arabic cart/checkout (WPML)
@@ -214,6 +221,9 @@ Yes. A full CRUD REST API is available at `matrix-bogo/v1`. Endpoints cover prom
 * Initial release — 5 promotion types, 16 condition types, priority manager, analytics dashboard, REST API, HPOS compatibility, import/export, multilingual
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Gift promotions can now include or exclude individual product options (variations). Existing tag/category promotions work exactly as before.
 
 = 1.3.0 =
 Adds product-tag triggers and an Arabic cart label to Category Get Gift promotions, and fixes category/tag matching on WPML secondary-language carts.

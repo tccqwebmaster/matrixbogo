@@ -26,6 +26,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  *  - matrix_bogo_get_product_details  : resolve saved product IDs to labels
  *  - matrix_bogo_get_category_details : resolve saved category IDs to labels
  *  - matrix_bogo_get_tag_details      : resolve saved tag IDs to labels
+ *  - matrix_bogo_search_variations    : search product options (variations) by SKU / name / ID
+ *                                       (saved IDs resolve via matrix_bogo_get_product_details)
  */
 final class AjaxSearch {
 
@@ -36,6 +38,7 @@ final class AjaxSearch {
 		$loader->add_action( 'wp_ajax_matrix_bogo_get_category_details', [ $this, 'get_category_details' ] );
 		$loader->add_action( 'wp_ajax_matrix_bogo_search_tags',          [ $this, 'search_tags' ] );
 		$loader->add_action( 'wp_ajax_matrix_bogo_get_tag_details',      [ $this, 'get_tag_details' ] );
+		$loader->add_action( 'wp_ajax_matrix_bogo_search_variations',    [ $this, 'search_variations' ] );
 	}
 
 	// -----------------------------------------------------------------
@@ -104,6 +107,82 @@ final class AjaxSearch {
 		}
 
 		wp_send_json_success( [ 'results' => array_slice( $results, 0, 20 ) ] );
+	}
+
+	// -----------------------------------------------------------------
+	// Variation (product option) search
+	// -----------------------------------------------------------------
+
+	/**
+	 * Search variations by ID, SKU (partial) or parent product name. Parents
+	 * may be drafts, so an option can be set up before its product goes live.
+	 */
+	public function search_variations(): void {
+		check_ajax_referer( 'matrix_bogo_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Unauthorized.', 'matrix-bogo' ) ] );
+		}
+
+		$q    = sanitize_text_field( wp_unslash( $_POST['q'] ?? '' ) );
+		$ids  = [];
+
+		global $wpdb;
+
+		// 1. Direct numeric ID: the variation itself, or all options of a parent product.
+		if ( is_numeric( $q ) && (int) $q > 0 ) {
+			$ids[] = absint( $q );
+		}
+
+		// 2. SKU (partial LIKE match) on variations.
+		$like = '%' . $wpdb->esc_like( $q ) . '%';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$ids = array_merge( $ids, array_map( 'absint', $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT pm.post_id
+				   FROM {$wpdb->postmeta} pm
+				   JOIN {$wpdb->posts} p ON p.ID = pm.post_id AND p.post_type = 'product_variation'
+				  WHERE pm.meta_key = '_sku'
+				    AND pm.meta_value LIKE %s
+				  LIMIT 30",
+				$like
+			)
+		) ) );
+
+		// 3. Parent product name → its options.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$ids = array_merge( $ids, array_map( 'absint', $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT v.ID
+				   FROM {$wpdb->posts} v
+				   JOIN {$wpdb->posts} p ON p.ID = v.post_parent
+				  WHERE v.post_type = 'product_variation'
+				    AND v.post_status IN ('publish','private')
+				    AND p.post_type = 'product'
+				    AND p.post_status IN ('publish','draft','pending','private','future')
+				    AND p.post_title LIKE %s
+				  ORDER BY p.ID DESC, v.menu_order ASC
+				  LIMIT 40",
+				$like
+			)
+		) ) );
+
+		$results = [];
+		foreach ( array_unique( $ids ) as $id ) {
+			$product = wc_get_product( $id );
+			if ( ! $product ) {
+				continue;
+			}
+			// A numeric ID of a variable product lists its options.
+			$options = $product->is_type( 'variation' ) ? [ $product ] : array_filter( array_map( 'wc_get_product', $product->get_children() ) );
+			foreach ( $options as $option ) {
+				if ( $option instanceof \WC_Product_Variation && ! isset( $results[ $option->get_id() ] ) ) {
+					$results[ $option->get_id() ] = $this->format_product( $option );
+				}
+			}
+		}
+
+		wp_send_json_success( [ 'results' => array_slice( array_values( $results ), 0, 40 ) ] );
 	}
 
 	/**

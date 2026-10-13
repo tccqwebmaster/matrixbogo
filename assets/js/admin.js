@@ -203,6 +203,8 @@
 
 	const ruleDataFields = {
 		buy_x_get_y:            [{ key: 'trigger_product_ids',  label: 'Trigger Products',   type: 'product_multi',  placeholder: 'Search by name, SKU, or ID' },
+		                         { key: 'trigger_variation_ids', label: 'Include options',   type: 'variation_multi', placeholder: 'Product options (variations) that always qualify, even without a matching trigger product. Search by SKU or name.' },
+		                         { key: 'exclude_variation_ids', label: 'Exclude options',   type: 'variation_multi', placeholder: 'Options left out although their product matches (e.g. the 128GB iPads of a tagged iPad). Search by SKU or name.' },
 		                         { key: 'trigger_quantity',     label: 'Trigger Quantity',    type: 'number',         placeholder: '1' }],
 		buy_x_get_x:            [{ key: 'trigger_product_ids',  label: 'Trigger Products',   type: 'product_multi',  placeholder: 'Search by name, SKU, or ID' },
 		                         { key: 'trigger_quantity',     label: 'Trigger Quantity',    type: 'number',         placeholder: '1' }],
@@ -210,6 +212,8 @@
 		cart_quantity_get_gift: [{ key: 'min_quantity',         label: 'Minimum Cart Qty',    type: 'number',         placeholder: '1' }],
 		category_get_gift:      [{ key: 'trigger_category_ids', label: 'Trigger Categories', type: 'category_multi', placeholder: 'Search by category name or ID' },
 		                         { key: 'trigger_tag_ids',      label: 'Trigger Tags',       type: 'tag_multi',      placeholder: 'Search by tag name or ID. A product matches if it is in ANY chosen category OR has ANY chosen tag.' },
+		                         { key: 'trigger_variation_ids', label: 'Include options',   type: 'variation_multi', placeholder: 'Product options (variations) that always qualify, even without a matching tag or category. Search by SKU or name.' },
+		                         { key: 'exclude_variation_ids', label: 'Exclude options',   type: 'variation_multi', placeholder: 'Options left out although their product matches (e.g. the 128GB iPads of a tagged iPad). Search by SKU or name.' },
 		                         { key: 'trigger_quantity',     label: 'Trigger Quantity',    type: 'number',         placeholder: '1' },
 		                         { key: 'label_ar',             label: 'Arabic cart label (optional)', type: 'text', placeholder: 'Shown instead of the promotion name on the Arabic cart/checkout' }],
 	};
@@ -280,6 +284,14 @@
 			prePopulateProducts($el, String($el.data('saved-ids') || '').trim());
 		});
 
+		// Multi-variation (product option) search.
+		$ctx.find('.matrix-bogo-variation-select2').each(function () {
+			const $el = $(this);
+			if ($el.hasClass('select2-hidden-accessible')) { return; }
+			$el.select2({ width: '100%', placeholder: 'Search options by SKU, product name, or ID…', allowClear: true, minimumInputLength: 3, ajax: s2AjaxCfg('matrix_bogo_search_variations') });
+			prePopulateProducts($el, String($el.data('saved-ids') || '').trim());
+		});
+
 		// Single-product search (reward product_id).
 		$ctx.find('.matrix-bogo-product-select2-single').each(function () {
 			const $el = $(this);
@@ -321,8 +333,8 @@
 			const val = window.matrixBogoRuleData && window.matrixBogoRuleData[field.key] !== undefined
 				? window.matrixBogoRuleData[field.key] : '';
 			html += '<tr><th>' + esc(field.label) + '</th><td>';
-			if (field.type === 'product_multi') {
-				html += '<select multiple class="matrix-bogo-product-select2 matrix-bogo-rule-data-field"'
+			if (field.type === 'product_multi' || field.type === 'variation_multi') {
+				html += '<select multiple class="' + (field.type === 'variation_multi' ? 'matrix-bogo-variation-select2' : 'matrix-bogo-product-select2') + ' matrix-bogo-rule-data-field"'
 					+ ' data-key="' + esc(field.key) + '" data-saved-ids="' + esc(String(val)) + '" style="min-width:380px"></select>'
 					+ '<p class="description">' + esc(field.placeholder) + '</p>';
 			} else if (field.type === 'category_multi' || field.type === 'tag_multi') {

@@ -26,25 +26,26 @@ final class RuleEngine {
 	 *
 	 * Trigger definition (all fields optional):
 	 * [
-	 *   'products'   => [int, ...],   // product IDs
-	 *   'variations' => [int, ...],   // variation IDs
-	 *   'categories' => [int, ...],   // category IDs
-	 *   'tags'       => [int, ...],   // tag IDs
-	 *   'quantity'   => int,          // required quantity
+	 *   'products'           => [int, ...],   // product IDs
+	 *   'variations'         => [int, ...],   // variation IDs — explicitly included options
+	 *   'exclude_variations' => [int, ...],   // variation IDs left out of a product/category/tag match
+	 *   'categories'         => [int, ...],   // category IDs
+	 *   'tags'               => [int, ...],   // tag IDs
+	 *   'rule_id'            => int,          // also include options ticked for this rule on the variation itself
+	 *   'quantity'           => int,          // required quantity
 	 * ]
+	 *
+	 * A line qualifies when (its product matches products/categories/tags AND
+	 * its option is not excluded) OR (its option is explicitly included).
 	 *
 	 * @param \WC_Cart            $cart
 	 * @param array<string,mixed> $trigger
-	 * @return array{matching_qty:int, eligible_count:int}
+	 * @return array{matching_qty:int, eligible_count:int, matched_items:array<int,array<string,int|string>>}
 	 */
 	public static function evaluate_trigger( \WC_Cart $cart, array $trigger ): array {
-		$product_ids   = array_map( 'intval', (array) ( $trigger['products']   ?? [] ) );
-		$variation_ids = array_map( 'intval', (array) ( $trigger['variations'] ?? [] ) );
-		$category_ids  = array_map( 'intval', (array) ( $trigger['categories'] ?? [] ) );
-		$tag_ids       = array_map( 'intval', (array) ( $trigger['tags']       ?? [] ) );
 		$required_qty  = (int) ( $trigger['quantity'] ?? 1 );
-
-		$matching_qty = 0;
+		$matching_qty  = 0;
+		$matched_items = [];
 
 		foreach ( $cart->get_cart() as $cart_item ) {
 			// Skip items that are already gifts from this plugin.
@@ -52,38 +53,19 @@ final class RuleEngine {
 				continue;
 			}
 
-			$pid    = (int) $cart_item['product_id'];
-			$vid    = (int) ( $cart_item['variation_id'] ?? 0 );
-			$qty    = (int) $cart_item['quantity'];
+			$pid = (int) $cart_item['product_id'];
+			$vid = (int) ( $cart_item['variation_id'] ?? 0 );
+			$qty = (int) $cart_item['quantity'];
 
-			$is_match = false;
-
-			if ( ! empty( $product_ids ) && in_array( $pid, $product_ids, true ) ) {
-				$is_match = true;
-			}
-			if ( ! empty( $variation_ids ) && $vid && in_array( $vid, $variation_ids, true ) ) {
-				$is_match = true;
-			}
-			if ( ! $is_match && ! empty( $category_ids ) ) {
-				$product_cats = self::term_ids( $pid, 'product_cat' );
-				if ( ! empty( array_intersect( $product_cats, $category_ids ) ) ) {
-					$is_match = true;
-				}
-			}
-			if ( ! $is_match && ! empty( $tag_ids ) ) {
-				$product_tags = self::term_ids( $pid, 'product_tag' );
-				if ( ! empty( array_intersect( $product_tags, $tag_ids ) ) ) {
-					$is_match = true;
-				}
-			}
-
-			// If all filters are empty → match any product.
-			if ( empty( $product_ids ) && empty( $variation_ids ) && empty( $category_ids ) && empty( $tag_ids ) ) {
-				$is_match = true;
-			}
-
-			if ( $is_match ) {
-				$matching_qty += $qty;
+			$via = self::match_line( $trigger, $pid, $vid );
+			if ( null !== $via ) {
+				$matching_qty   += $qty;
+				$matched_items[] = [
+					'product_id'   => $pid,
+					'variation_id' => $vid,
+					'quantity'     => $qty,
+					'via'          => $via,
+				];
 			}
 		}
 
@@ -93,7 +75,56 @@ final class RuleEngine {
 		return [
 			'matching_qty'   => $matching_qty,
 			'eligible_count' => $eligible_count,
+			'matched_items'  => $matched_items,
 		];
+	}
+
+	/**
+	 * Why a product / option matches a trigger: 'option' (explicitly
+	 * included), 'product', 'category', 'tag', 'any' (empty trigger) — or
+	 * null when it does not qualify.
+	 *
+	 * @param array<string,mixed> $trigger See evaluate_trigger().
+	 * @param int                 $pid     Parent product ID.
+	 * @param int                 $vid     Variation ID (0 for simple products).
+	 */
+	public static function match_line( array $trigger, int $pid, int $vid = 0 ): ?string {
+		$product_ids   = array_map( 'intval', (array) ( $trigger['products']           ?? [] ) );
+		$variation_ids = array_map( 'intval', (array) ( $trigger['variations']         ?? [] ) );
+		$excluded_ids  = array_map( 'intval', (array) ( $trigger['exclude_variations'] ?? [] ) );
+		$category_ids  = array_map( 'intval', (array) ( $trigger['categories']         ?? [] ) );
+		$tag_ids       = array_map( 'intval', (array) ( $trigger['tags']               ?? [] ) );
+		$rule_id       = (int) ( $trigger['rule_id'] ?? 0 );
+
+		// Explicitly included option — wins over everything else.
+		if ( $vid ) {
+			if ( in_array( $vid, $variation_ids, true ) ) {
+				return 'option';
+			}
+			if ( $rule_id && in_array( $rule_id, VariationEligibility::rule_ids_for( $vid ), true ) ) {
+				return 'option';
+			}
+			if ( in_array( $vid, $excluded_ids, true ) ) {
+				return null;
+			}
+		}
+
+		if ( ! empty( $product_ids ) && in_array( $pid, $product_ids, true ) ) {
+			return 'product';
+		}
+		if ( ! empty( $category_ids ) && array_intersect( self::term_ids( $pid, 'product_cat' ), $category_ids ) ) {
+			return 'category';
+		}
+		if ( ! empty( $tag_ids ) && array_intersect( self::term_ids( $pid, 'product_tag' ), $tag_ids ) ) {
+			return 'tag';
+		}
+
+		// All filters empty → match any product (not for rules that select by option).
+		if ( ! $rule_id && empty( $product_ids ) && empty( $variation_ids ) && empty( $category_ids ) && empty( $tag_ids ) ) {
+			return 'any';
+		}
+
+		return null;
 	}
 
 	/**
