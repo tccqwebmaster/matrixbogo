@@ -6,7 +6,7 @@ Tested up to: 6.9
 Requires PHP: 8.1
 WC requires at least: 8.0
 WC tested up to: 10.7.0
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,10 @@ Yes. A full CRUD REST API is available at `matrix-bogo/v1`. Endpoints cover prom
 
 == Changelog ==
 
+= 1.4.2 =
+* Fixed: "FREE GIFT" badge showed on every product card — it now appears only for Free Product promotions, on their gift products and on products that match the promotion's trigger
+* Fixed: The gift badge no longer covers the theme's Sale / New labels (moved to the opposite corner)
+
 = 1.4.1 =
 * Fixed: Critical error on pages with Porto product grids (e.g. the homepage) after 1.4.0 — WPML language lookup no longer resets the global product
 
@@ -224,6 +228,9 @@ Yes. A full CRUD REST API is available at `matrix-bogo/v1`. Endpoints cover prom
 * Initial release — 5 promotion types, 16 condition types, priority manager, analytics dashboard, REST API, HPOS compatibility, import/export, multilingual
 
 == Upgrade Notice ==
+
+= 1.4.2 =
+Fixes the "FREE GIFT" badge appearing on every product.
 
 = 1.4.1 =
 Urgent fix for a critical error on pages with product grids introduced in 1.4.0.
