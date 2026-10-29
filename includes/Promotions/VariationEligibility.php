@@ -79,10 +79,9 @@ final class VariationEligibility {
 		if ( empty( $ids ) || ! has_filter( 'wpml_object_id' ) ) {
 			return $ids;
 		}
-		$languages = (array) apply_filters( 'wpml_active_languages', null, [ 'skip_missing' => 0 ] );
-		$out       = $ids;
+		$out = $ids;
 		foreach ( $ids as $id ) {
-			foreach ( array_keys( $languages ) as $lang ) {
+			foreach ( self::language_codes() as $lang ) {
 				$tid = (int) apply_filters( 'wpml_object_id', $id, $type, false, $lang );
 				if ( $tid > 0 ) {
 					$out[] = $tid;
@@ -90,6 +89,33 @@ final class VariationEligibility {
 			}
 		}
 		return array_values( array_unique( array_map( 'intval', $out ) ) );
+	}
+
+	/**
+	 * Active WPML language codes, computed once per request.
+	 *
+	 * Uses SitePress::get_active_languages() rather than the
+	 * 'wpml_active_languages' filter: that filter builds the language
+	 * switcher and calls wp_reset_query(), which re-runs setup_postdata() for
+	 * the main query post and wipes the global $product inside product loops
+	 * (fatal in Porto's shop swatches on the homepage).
+	 *
+	 * @return string[]
+	 */
+	private static function language_codes(): array {
+		static $codes = null;
+		if ( null !== $codes ) {
+			return $codes;
+		}
+		global $sitepress;
+		if ( is_object( $sitepress ) && method_exists( $sitepress, 'get_active_languages' ) ) {
+			return $codes = array_map( 'strval', array_keys( (array) $sitepress->get_active_languages() ) );
+		}
+		// Fallback: the filter, with the loop globals put back afterwards.
+		$saved     = [ $GLOBALS['post'] ?? null, $GLOBALS['product'] ?? null ];
+		$languages = (array) apply_filters( 'wpml_active_languages', null, [ 'skip_missing' => 0 ] );
+		[ $GLOBALS['post'], $GLOBALS['product'] ] = $saved;
+		return $codes = array_map( 'strval', array_keys( $languages ) );
 	}
 
 	/**

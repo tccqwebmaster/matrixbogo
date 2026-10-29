@@ -1,5 +1,13 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-10-29 - version 1.4.2
+* Fixed: "FREE GIFT" product badge (Settings → Show Product Badges) appeared on EVERY product card, e.g. cart cross-sells. The badge code read a non-existent rule_data key ('trigger_products'), so every active promotion matched every product, and it never checked the reward type.
+* Changed: the gift badge and the single-product promotion notice now show only for promotions with a Free Product reward, and only on that promotion's gift products or on products / options that match its trigger (same RuleEngine::match_line() rule as the cart). Discount rewards (fixed / percent / cheapest free) never show the gift badge; a promotion with no products, categories, tags or options set badges nothing.
+* Changed: loop badge moved to the top-right corner (top-left on RTL) so it no longer covers Porto's Sale / New / Hot labels.
+
+2026-10-13 - version 1.4.1
+* Fixed: Homepage (EN+AR) 500 / critical error after 1.4.0 — WPML IDs were mapped via the 'wpml_active_languages' filter, which calls wp_reset_query() and wiped the global $product inside Porto's product-grid swatches ("get_meta() on null" in variable.php). Language codes now come from SitePress::get_active_languages() (cached per request) and the variation filter restores the loop globals.
+
 2026-10-13 - version 1.4.0
 * Added: Option-level (variation) eligibility for gift promotions. A cart line qualifies when (its product matches the categories/tags/products AND the option is not excluded) OR the option is explicitly included. Built for the QR100 voucher on iPads/iPhones where only some storage options get it.
 * Added: "Gift promotions for this option" checkboxes on every variation (Product data → Variations). Saved as variation meta _matrix_bogo_promo_ids (int[] of rule IDs); copied to translations via the new wpml-config.xml, and the cart also reads the default-language original's value.

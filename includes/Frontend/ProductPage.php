@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace MatrixBogo\Frontend;
 
 use MatrixBogo\Core\Loader;
+use MatrixBogo\Database\Repositories\RewardsRepository;
 use MatrixBogo\Database\Repositories\RulesRepository;
 use MatrixBogo\Promotions\PromotionEngine;
 use MatrixBogo\Promotions\RuleEngine;
@@ -65,6 +66,8 @@ final class ProductPage {
 		if ( ! is_array( $data ) || ! $product instanceof \WC_Product || ! $variation instanceof \WC_Product ) {
 			return $data;
 		}
+		// Never let promotion lookups disturb the loop's globals (Porto swatches read them).
+		$saved  = [ $GLOBALS['post'] ?? null, $GLOBALS['product'] ?? null ];
 		$promos = [];
 		foreach ( $this->option_rules_for( $product ) as $promotion ) {
 			if ( null !== RuleEngine::match_line( $promotion->get_trigger(), $product->get_id(), $variation->get_id() ) ) {
@@ -77,6 +80,7 @@ final class ProductPage {
 		if ( $this->option_rules_for( $product ) ) {
 			$data['matrix_bogo_promos'] = $promos;
 		}
+		[ $GLOBALS['post'], $GLOBALS['product'] ] = $saved;
 		return $data;
 	}
 
@@ -150,7 +154,7 @@ final class ProductPage {
 			return;
 		}
 
-		if ( ! $this->product_has_active_promotion( $product->get_id() ) ) {
+		if ( ! $this->product_has_active_promotion( $product ) ) {
 			return;
 		}
 
@@ -170,7 +174,7 @@ final class ProductPage {
 			return;
 		}
 
-		$promotions = $this->get_applicable_promotions( $product->get_id() );
+		$promotions = $this->get_applicable_promotions( $product );
 
 		if ( empty( $promotions ) ) {
 			return;
@@ -188,29 +192,78 @@ final class ProductPage {
 	// Helpers
 	// -----------------------------------------------------------------
 
-	private function product_has_active_promotion( int $product_id ): bool {
-		return ! empty( $this->get_applicable_promotions( $product_id ) );
+	private function product_has_active_promotion( \WC_Product $product ): bool {
+		return ! empty( $this->get_applicable_promotions( $product ) );
 	}
 
-	private function get_applicable_promotions( int $product_id ): array {
-		$cache_key = 'product_promos_' . $product_id;
+	/**
+	 * Active promotions that give a FREE PRODUCT and concern this product:
+	 * it is one of the gift products, or it (or one of its options) matches
+	 * the promotion's trigger. Discount rewards (fixed / percent / cheapest)
+	 * never earn the gift badge, and a promotion with no products,
+	 * categories, tags or options set badges nothing — it used to badge
+	 * every product (the old code read a non-existent 'trigger_products' key).
+	 *
+	 * @return array<int, array<string,mixed>> Rule rows.
+	 */
+	private function get_applicable_promotions( \WC_Product $product ): array {
+		$pid       = $product->get_id();
+		$cache_key = 'product_promos_' . $pid;
 		$cached    = wp_cache_get( $cache_key, 'matrix_bogo' );
 
 		if ( false !== $cached ) {
 			return $cached;
 		}
 
-		$rules  = $this->rules->get_active_rules();
-		$result = [];
+		$rewards_repo = new RewardsRepository();
+		$children     = $product->is_type( 'variable' ) ? array_map( 'intval', $product->get_children() ) : [];
+		$orig         = VariationEligibility::original_id( $pid, 'product' );
+		$ids          = array_filter( [ $pid, $orig ] );
+		$result       = [];
 
-		foreach ( $rules as $rule ) {
-			$rule_data = ! empty( $rule['rule_data'] ) ? json_decode( $rule['rule_data'], true ) : [];
-			$products  = array_map( 'intval', (array) ( $rule_data['trigger_products'] ?? [] ) );
+		// Keep the loop's globals intact (see variation_promos()).
+		$saved = [ $GLOBALS['post'] ?? null, $GLOBALS['product'] ?? null ];
 
-			if ( empty( $products ) || in_array( $product_id, $products, true ) ) {
+		foreach ( $this->rules->get_active_rules() as $rule ) {
+			$gift_ids = [];
+			foreach ( $rewards_repo->get_for_rule( (int) $rule['id'] ) as $reward ) {
+				if ( 'free_product' !== (string) ( $reward['reward_type'] ?? 'free_product' ) ) {
+					continue;
+				}
+				$gift_ids[] = (int) ( $reward['product_id'] ?? 0 );
+				$pool       = $reward['choice_pool'] ?? '';
+				$pool       = is_array( $pool ) ? $pool : ( json_decode( (string) $pool, true ) ?? explode( ',', (string) $pool ) );
+				$gift_ids   = array_merge( $gift_ids, array_map( 'intval', (array) $pool ) );
+			}
+			if ( empty( $gift_ids ) ) {
+				continue; // No free-product reward → no gift badge.
+			}
+
+			// The product is a gift itself.
+			if ( array_intersect( $ids, array_filter( $gift_ids ) ) ) {
+				$result[] = $rule;
+				continue;
+			}
+
+			// The product (or one of its options) triggers the promotion.
+			$promotion = $this->engine->make_promotion( $rule );
+			$trigger   = $promotion ? $promotion->get_trigger() : [];
+			if ( empty( $trigger ) ) {
+				continue;
+			}
+			$matches = null !== RuleEngine::match_line( $trigger, $pid, 0 );
+			foreach ( $children as $vid ) {
+				if ( $matches ) {
+					break;
+				}
+				$matches = null !== RuleEngine::match_line( $trigger, $pid, $vid );
+			}
+			if ( $matches ) {
 				$result[] = $rule;
 			}
 		}
+
+		[ $GLOBALS['post'], $GLOBALS['product'] ] = $saved;
 
 		wp_cache_set( $cache_key, $result, 'matrix_bogo', 60 );
 		return $result;

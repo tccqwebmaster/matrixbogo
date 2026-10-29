@@ -2,10 +2,10 @@
    Matrix BOGO – RTL overrides
    ========================================================= */
 
-/* Flip left/right for RTL locales */
+/* Flip left/right for RTL locales (badge sits opposite the theme's sale/new labels) */
 .matrix-bogo-badge {
-	left: auto;
-	right: 10px;
+	right: auto;
+	left: 10px;
 }
 
 .matrix-bogo-product-promo-badge {
