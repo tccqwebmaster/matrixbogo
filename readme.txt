@@ -6,7 +6,7 @@ Tested up to: 6.9
 Requires PHP: 8.1
 WC requires at least: 8.0
 WC tested up to: 10.7.0
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,9 @@ Yes. A full CRUD REST API is available at `matrix-bogo/v1`. Endpoints cover prom
 
 == Changelog ==
 
+= 1.4.3 =
+* Security: A free gift could be added to the cart for any product, in any quantity, without qualifying for a promotion. Gifts are now only accepted when a promotion is actually earned, and the cart and checkout remove any gift that is not covered
+
 = 1.4.2 =
 * Fixed: "FREE GIFT" badge showed on every product card — it now appears only for Free Product promotions, on their gift products and on products that match the promotion's trigger
 * Fixed: The gift badge no longer covers the theme's Sale / New labels (moved to the opposite corner)
@@ -228,6 +231,9 @@ Yes. A full CRUD REST API is available at `matrix-bogo/v1`. Endpoints cover prom
 * Initial release — 5 promotion types, 16 condition types, priority manager, analytics dashboard, REST API, HPOS compatibility, import/export, multilingual
 
 == Upgrade Notice ==
+
+= 1.4.3 =
+Security fix: update immediately. Free gifts could be added without qualifying.
 
 = 1.4.2 =
 Fixes the "FREE GIFT" badge appearing on every product.
