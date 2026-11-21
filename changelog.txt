@@ -1,5 +1,10 @@
 *** Matrix BOGO WooCommerce Promotion Changelog ***
 
+2026-11-21 - version 1.4.3
+* Security: `matrix_bogo_apply_gift` (public AJAX, nonce printed on every page) added ANY product id, in ANY quantity, for ANY rule id, at price 0 - it never checked that the rule was earned or that the product was one of its gifts. Exploited on tccq.com 21 Nov 2026: COD orders for iPhones, a MacBook and an iPad paying only the delivery fee.
+* Fixed: the AJAX handler re-evaluates the cart and only adds the gift when a customer-choice reward of THAT rule covers the product (pool, or any product when the pool is empty) and the quantity, counting gifts already in the cart.
+* Added: CartValidator::enforce_earned_gifts() on `woocommerce_check_cart_items` (cart, checkout page, classic checkout submit and Store API) - every gift line must be covered by a reward of its own rule in a fresh evaluation (product/variation and quantity, max_per_order respected); uncovered lines are removed and the order is refused with an error notice. Gift lines never count as triggers, so a gift cannot earn itself.
+
 2026-10-29 - version 1.4.2
 * Fixed: "FREE GIFT" product badge (Settings → Show Product Badges) appeared on EVERY product card, e.g. cart cross-sells. The badge code read a non-existent rule_data key ('trigger_products'), so every active promotion matched every product, and it never checked the reward type.
 * Changed: the gift badge and the single-product promotion notice now show only for promotions with a Free Product reward, and only on that promotion's gift products or on products / options that match its trigger (same RuleEngine::match_line() rule as the cart). Discount rewards (fixed / percent / cheapest free) never show the gift badge; a promotion with no products, categories, tags or options set badges nothing.

@@ -82,6 +82,9 @@ final class CartEngine {
 		// Remove gifts when conditions fail.
 		$loader->add_action( 'woocommerce_before_calculate_totals',     [ $this, 'remove_invalid_gifts' ], 10 );
 
+		// Security (1.4.3): every gift line must be earned — checked again at checkout.
+		$loader->add_action( 'woocommerce_check_cart_items',            [ $this->validator, 'enforce_earned_gifts' ], 1 );
+
 		// Record redemptions after checkout.
 		$loader->add_action( 'woocommerce_checkout_order_created',      [ $this, 'record_redemptions' ], 10 );
 
@@ -355,6 +358,30 @@ final class CartEngine {
 
 		if ( ! $rule_id || ! $product_id ) {
 			wp_send_json_error( [ 'message' => __( 'Invalid request.', 'matrix-bogo' ) ] );
+		}
+
+		/*
+		 * Security (1.4.3): the gift must be EARNED. Re-evaluate the cart now
+		 * and require a customer-choice reward of THIS rule that covers this
+		 * product, on top of the gifts already in the cart. Before this, any
+		 * product id + any rule id was added at price 0.
+		 */
+		$cart = WC()->cart;
+		if ( ! $cart ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid request.', 'matrix-bogo' ) ] );
+		}
+		$candidate = wc_get_product( $product_id );
+		$lines     = CartValidator::gift_lines( $cart );
+		$lines['__new'] = [
+			'rule' => $rule_id,
+			'pid'  => $candidate && $candidate->get_parent_id() ? (int) $candidate->get_parent_id() : $product_id,
+			'vid'  => $candidate && $candidate->get_parent_id() ? $product_id : 0,
+			'qty'  => $qty,
+		];
+		// choice_only: the popup only hands out customer-choice gifts.
+		$uncovered = CartValidator::uncovered_gift_lines( $this->promotion_engine->evaluate_cart( $cart ), $lines, true );
+		if ( in_array( '__new', $uncovered, true ) ) {
+			wp_send_json_error( [ 'message' => __( 'This gift is not available for your cart.', 'matrix-bogo' ) ] );
 		}
 
 		$result = $this->modifier->add_gift_to_cart( $product_id, $qty, $rule_id );
